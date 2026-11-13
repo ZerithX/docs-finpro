@@ -1,0 +1,14 @@
+# [CampusDesk] Dasbor dimuat otomatis dari file (dashboard as code), bukan dibuat manual di UI.
+# Folder provisioning sudah di-mount oleh docker-compose.yml, jadi tidak perlu mengubah compose.
+# Salinan versi yang dinilai disimpan di repo portofolio: 07-observability-slo/grafana/.
+apiVersion: 1
+
+providers:
+  - name: campusdesk
+    folder: CampusDesk
+    type: file
+    disableDeletion: true
+    # Perubahan di UI tidak disimpan; ubah file JSON-nya supaya tetap terlacak.
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/provisioning/dashboards/json

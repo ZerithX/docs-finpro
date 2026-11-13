@@ -1,0 +1,1 @@
+1..120 | ForEach-Object { curl.exe -s -o NUL http://capstone.localhost:8088/api/units; if ($_ % 20 -eq 0) { curl.exe -s -o NUL http://capstone.localhost:8088/api/tidak-ada }; Start-Sleep -Milliseconds 500 }

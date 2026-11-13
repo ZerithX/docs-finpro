@@ -1,0 +1,10 @@
+# Repo kerja punya Git sendiri (lihat source/README.md)
+capstone-app/
+capstone-gitops/
+
+# Arsip, output mentah, dan file lokal
+cloud-ai.zip
+evidence-raw/
+.github/modernize/
+claude/
+

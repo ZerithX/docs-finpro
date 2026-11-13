@@ -1,0 +1,2 @@
+curl.exe http://capstone.localhost:8088/api/units       
+[{"id":1,"code":"tenant-a","name":"Fakultas A"},{"id":2,"code":"tenant-b","name":"Fakultas B"}]

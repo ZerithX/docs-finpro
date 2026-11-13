@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./infrastructure/.runtime/**)",
+      "Read(./**/.runner)",
+      "Bash(*reset-lab*)"
+    ]
+  }
+}
