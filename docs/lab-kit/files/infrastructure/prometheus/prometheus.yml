@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  # [CampusDesk T2] Konfigurasi asli men-scrape host.docker.internal:8088 dan selalu 404,
+  # karena Ingress hanya melayani host capstone.localhost. Header Host tidak bisa dipakai
+  # (promtool: 'setting header "Host" is not allowed'). Solusinya: Service NodePort
+  # capstone-app-metrics (repo GitOps, nodePort 30081) yang dijangkau lewat container node k3d
+  # di jaringan capstone-net. Port 8088 di host tidak dipakai, jadi tetap jalan walau publish
+  # ingress nanti dibatasi ke 127.0.0.1 (T11).
+  # Limitasi: lewat Service, tiap scrape bisa mengenai pod berbeda bila replica > 1.
+  - job_name: capstone-app
+    metrics_path: /q/metrics
+    static_configs:
+      - targets:
+          - k3d-capstone-server-0:30081
+        labels:
+          environment: dev
+
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090

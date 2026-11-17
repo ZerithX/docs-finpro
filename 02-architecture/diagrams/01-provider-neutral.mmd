@@ -1,0 +1,46 @@
+%% View 1 — Provider-neutral (lapisan ala ArchiMate: Business → Application → Technology)
+flowchart TB
+  classDef biz fill:#FFF5CC,stroke:#B8960C,color:#222
+  classDef app fill:#D9ECFF,stroke:#2F6DB5,color:#222
+  classDef tech fill:#DFF3E0,stroke:#3C8D40,color:#222
+  classDef ops fill:#EFE5FA,stroke:#7A4FB0,color:#222
+
+  subgraph BUS["Business layer"]
+    U["Pengguna unit/fakultas<br/>(role user + tenant)"]:::biz
+    OP["Teknisi TI<br/>(role operator)"]:::biz
+    AD["Kepala Unit TI<br/>(role admin)"]:::biz
+    P1["Proses: tiket → assign →<br/>resolusi → ringkasan SLA"]:::biz
+  end
+
+  subgraph APP["Application layer"]
+    GW["Edge / API gateway<br/>(routing HTTP)"]:::app
+    CD["CampusDesk API<br/>modular monolith<br/>modul: units · tickets · sla · reports · audit"]:::app
+    IDP["Identity provider<br/>(OIDC, role + group tenant)"]:::app
+  end
+
+  subgraph TECH["Technology layer"]
+    ORC["Container orchestrator<br/>(Deployment, Service, probe, resources)"]:::tech
+    DB[("Relational DB<br/>shared schema + tenant_id")]:::tech
+    REG["Container registry<br/>(image immutable)"]:::tech
+  end
+
+  subgraph OPS["Delivery & Operations"]
+    GIT["Git (app repo + GitOps repo)"]:::ops
+    CI["CI: verify → build → scan → push"]:::ops
+    CDC["GitOps controller<br/>(reconcile desired state)"]:::ops
+    MON["Metrics + dashboard<br/>(SLI/SLO)"]:::ops
+  end
+
+  U & OP & AD --> P1
+  P1 -->|"REST API (HTTPS di target)"| GW
+  GW --> CD
+  U -. "login, ambil token" .-> IDP
+  CD -->|"validasi JWT (issuer, JWKS)"| IDP
+  CD -->|"SQL, filter tenant terpusat"| DB
+  CD -. "berjalan di" .-> ORC
+  GIT --> CI --> REG
+  CI -->|"update tag image"| GIT
+  CDC -->|"tarik desired state"| GIT
+  CDC -->|"apply"| ORC
+  ORC -->|"pull image"| REG
+  MON -->|"scrape /q/metrics"| CD

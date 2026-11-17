@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: capstone-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    # [CampusDesk T10] Pakai nama service di jaringan capstone-net (sama seperti CI).
+    # host.k3d.internal:3001 ditolak karena Gitea hanya bind ke 127.0.0.1 di host.
+    repoURL: http://gitea:3000/student/capstone-gitops.git
+    targetRevision: main
+    path: overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: capstone
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

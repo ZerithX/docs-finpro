@@ -1,0 +1,25 @@
+%% View 3 — Alur data: user tenant-a membuat tiket (target M2)
+sequenceDiagram
+  autonumber
+  actor U as usera (tenant-a)
+  participant KC as Keycloak (OIDC)
+  participant ING as Traefik Ingress
+  participant API as CampusDesk API (pod)
+  participant DB as PostgreSQL
+
+  U->>KC: login (realm capstone)
+  KC-->>U: access token (realm_access.roles = user, groups = /tenant-a)
+  U->>ING: POST /api/tickets + Bearer token  [B1]
+  ING->>API: teruskan request  [B2]
+  API->>API: validasi JWT (issuer, signature, exp) via JWKS Keycloak  [B3]
+  alt token tidak ada / tidak valid
+    API-->>U: 401
+  else role tidak sesuai
+    API-->>U: 403
+  end
+  API->>API: TenantContext = tenant-a (dari klaim groups, BUKAN dari input)
+  API->>DB: SELECT sla_policy WHERE priority = ?  [B5]
+  API->>DB: INSERT tickets (tenant_id = tenant-a, response_due_at, resolve_due_at)  [B4]
+  DB-->>API: id tiket
+  API-->>U: 201 + DTO tiket
+  Note over API,DB: GET tiket tenant-b oleh usera → filter tenant terpusat → 404 (QS1)

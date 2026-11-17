@@ -1,0 +1,30 @@
+%% View 4 — Target private cloud CloudStack (DESAIN, belum diimplementasikan)
+flowchart TB
+  classDef plan fill:#F4F4F4,stroke:#666,stroke-dasharray: 5 5,color:#222
+  classDef net fill:#FFF5CC,stroke:#B8960C,color:#222
+
+  USR["Pengguna kampus"]:::net
+  subgraph CS["Apache CloudStack — 1 zone kampus (DESAIN)"]
+    VR["Virtual Router / Load Balancer<br/>IP publik kampus + TLS"]:::net
+    subgraph NWAPP["Isolated network: app"]
+      M["VM k3s server"]:::plan
+      W1["VM k3s agent 1"]:::plan
+      W2["VM k3s agent 2"]:::plan
+    end
+    subgraph NWDATA["Isolated network: data (tidak bisa diakses dari luar)"]
+      DBVM[("VM PostgreSQL<br/>+ volume primary storage")]:::plan
+      KCVM["VM Keycloak"]:::plan
+    end
+    subgraph NWOPS["Isolated network: ops"]
+      GV["VM Gitea + runner + registry"]:::plan
+      MV["VM Prometheus/Grafana"]:::plan
+    end
+    SS["Secondary storage / object storage<br/>backup pg_dump + snapshot volume"]:::plan
+  end
+
+  USR -->|"HTTPS"| VR --> W1 & W2
+  W1 & W2 -->|"SQL"| DBVM
+  W1 & W2 -->|"JWKS"| KCVM
+  DBVM -->|"backup terjadwal"| SS
+  GV -->|"image"| W1 & W2
+  MV -->|"scrape"| W1 & W2

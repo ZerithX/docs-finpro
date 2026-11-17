@@ -1,0 +1,25 @@
+%% View 2b — Implementasi lab: jalur delivery (CI + GitOps) + trust boundary B6–B7
+flowchart LR
+  classDef ext fill:#FFFFFF,stroke:#555,color:#222
+  classDef k8s fill:#D9ECFF,stroke:#2F6DB5,color:#222
+  classDef ops fill:#EFE5FA,stroke:#7A4FB0,color:#222
+
+  DEV["Developer<br/>branch + PR<br/>(review 1 anggota lain)"]:::ext
+  subgraph GITEA["Gitea (localhost:3001)"]
+    APPR["repo capstone-app<br/>(source + .gitea/workflows/ci.yml)"]:::ops
+    GOR["repo capstone-gitops<br/>(Kustomize base + overlays/dev)"]:::ops
+  end
+  RUN["Gitea Actions runner<br/>job build-test-scan-publish<br/>verify → test → build → Trivy → push"]:::ops
+  REG["Registry registry:5000<br/>capstone-app:&lt;short SHA&gt;<br/>+ digest sha256"]:::ops
+  subgraph K3D["Cluster k3d-capstone"]
+    ARGO["Argo CD<br/>Application dev (auto-sync)"]:::k8s
+    DEP["Deployment capstone-app<br/>ReplicaSet per versi image"]:::k8s
+  end
+
+  DEV -->|"B6 · merge ke main"| APPR
+  APPR -->|"trigger"| RUN
+  RUN -->|"B6 · push image"| REG
+  RUN -->|"B7 · commit tag baru"| GOR
+  ARGO -->|"B7 · tarik desired state"| GOR
+  ARGO -->|"B7 · apply / reconcile"| DEP
+  DEP -->|"pull image"| REG

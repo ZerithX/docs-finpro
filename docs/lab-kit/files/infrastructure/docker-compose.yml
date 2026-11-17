@@ -1,0 +1,142 @@
+name: cloud-capstone
+
+services:
+  gitea:
+    image: gitea/gitea:${GITEA_VERSION:-28.2.0}
+    container_name: capstone-gitea
+    restart: unless-stopped
+    environment:
+      USER_UID: "1000"
+      USER_GID: "1000"
+      GITEA__database__DB_TYPE: sqlite3
+      GITEA__server__DOMAIN: localhost
+      GITEA__server__ROOT_URL: http://localhost:3001/
+      GITEA__server__SSH_DOMAIN: localhost
+      GITEA__server__SSH_PORT: "2222"
+      GITEA__actions__ENABLED: "true"
+      GITEA__service__DISABLE_REGISTRATION: "true"
+      GITEA__repository__DEFAULT_PRIVATE: "false"
+      # [CampusDesk T9] Lewati wizard instalasi agar API dan perintah `gitea admin` langsung aktif.
+      GITEA__security__INSTALL_LOCK: "true"
+    ports:
+      - "127.0.0.1:3001:3000"
+      - "127.0.0.1:2222:22"
+    volumes:
+      - gitea_data:/data
+    networks: [capstone-net]
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: capstone-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-capstone}
+      POSTGRES_USER: ${POSTGRES_USER:-capstone}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-capstone}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-capstone} -d ${POSTGRES_DB:-capstone}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [capstone-net]
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION:-26.8.1}
+    container_name: capstone-keycloak
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    ports:
+      - "127.0.0.1:${KEYCLOAK_PORT:-8081}:8080"
+    volumes:
+      - ./keycloak/realm-capstone.json:/opt/keycloak/data/import/realm-capstone.json:ro
+      - keycloak_data:/opt/keycloak/data
+    networks: [capstone-net]
+
+  registry:
+    image: registry:2
+    container_name: capstone-registry
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${REGISTRY_PORT:-5001}:5000"
+    volumes:
+      - registry_data:/var/lib/registry
+    networks:
+      capstone-net:
+        aliases:
+          - registry
+
+  gitea-runner:
+    build:
+      context: ./runner
+      args:
+        RUNNER_VERSION: ${RUNNER_VERSION:-5.1.1}
+    image: capstone/gitea-runner:${RUNNER_VERSION:-5.1.1}
+    container_name: capstone-gitea-runner
+    profiles: ["ci"]
+    restart: unless-stopped
+    depends_on:
+      - gitea
+    environment:
+      GITEA_INSTANCE_URL: http://gitea:3000/
+      GITEA_RUNNER_REGISTRATION_TOKEN_FILE: /run/secrets/runner-token
+      GITEA_RUNNER_NAME: ${RUNNER_NAME:-capstone-local-runner}
+      GITEA_RUNNER_LABELS: capstone:host
+    volumes:
+      - runner_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./.runtime/runner-token:/run/secrets/runner-token:ro
+    networks: [capstone-net]
+
+  prometheus:
+    image: prom/prometheus:v${PROMETHEUS_VERSION:-3.15.1}
+    container_name: capstone-prometheus
+    profiles: ["observability"]
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=3d"
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks: [capstone-net]
+
+  grafana:
+    image: grafana/grafana:${GRAFANA_VERSION:-13.2.4}
+    container_name: capstone-grafana
+    profiles: ["observability"]
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    depends_on: [prometheus]
+    networks: [capstone-net]
+
+networks:
+  capstone-net:
+    name: capstone-net
+
+volumes:
+  gitea_data:
+  runner_data:
+  postgres_data:
+  keycloak_data:
+  registry_data:
+  prometheus_data:
+  grafana_data:

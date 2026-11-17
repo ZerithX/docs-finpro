@@ -1,0 +1,179 @@
+{
+  "uid": "campusdesk-service-health",
+  "title": "CampusDesk — Service Health",
+  "description": "Kesehatan layanan CampusDesk untuk Kepala Unit TI. Panel SLA bisnis ditambahkan setelah metrik tiket (R7) tersedia.",
+  "tags": ["campusdesk", "m5"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "templating": { "list": [] },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "Cara membaca dasbor ini",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 4 },
+      "options": {
+        "mode": "markdown",
+        "content": "**Audiens:** Kepala Unit TI kampus. **Pertanyaan:** apakah CampusDesk bisa dipakai unit/fakultas saat ini, dan apakah memenuhi target layanan?\n\nTarget (SLO usulan, lihat `07-observability-slo/`): **non-5xx ≥ 99%** · **p95 latensi API ≤ 500 ms**. Lalu lintas `/q/...` (health, metrics) tidak dihitung. Panel **SLA tiket per unit** menyusul setelah metrik bisnis (R7)."
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Status layanan",
+      "description": "1 = Prometheus berhasil mengambil metrik aplikasi pada scrape terakhir.",
+      "gridPos": { "x": 0, "y": 4, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "max(up{job=\"capstone-app\"})", "instant": true }],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Request API per detik (5m)",
+      "gridPos": { "x": 6, "y": 4, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(http_server_requests_seconds_count{job=\"capstone-app\",route!~\"/q/.*\"}[5m])) or vector(0)" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 2 }, "overrides": [] },
+      "options": { "colorMode": "none", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Request sukses / non-5xx (5m) — SLO ≥ 99%",
+      "description": "Persentase request API yang tidak berstatus 5xx. Tanpa lalu lintas, nilainya 100%.",
+      "gridPos": { "x": 12, "y": 4, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * (1 - ((sum(rate(http_server_requests_seconds_count{job=\"capstone-app\",route!~\"/q/.*\",status=~\"5..\"}[5m])) or vector(0)) / clamp_min(sum(rate(http_server_requests_seconds_count{job=\"capstone-app\",route!~\"/q/.*\"}[5m])) or vector(0), 1e-9)))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 2,
+          "max": 100,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 99 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Latensi API p95 (5m) — SLO ≤ 500 ms",
+      "gridPos": { "x": 18, "y": 4, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "1000 * histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{job=\"capstone-app\",route!~\"/q/.*\"}[5m])))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "decimals": 1,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 500 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Request API per route dan status",
+      "gridPos": { "x": 0, "y": 9, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (route, status) (rate(http_server_requests_seconds_count{job=\"capstone-app\",route!~\"/q/.*\"}[5m]))",
+          "legendFormat": "{{route}} {{status}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Latensi p95 per route",
+      "gridPos": { "x": 12, "y": 9, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "1000 * histogram_quantile(0.95, sum by (le, route) (rate(http_server_requests_seconds_bucket{job=\"capstone-app\",route!~\"/q/.*\"}[5m])))",
+          "legendFormat": "{{route}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": { "thresholdsStyle": { "mode": "line" } },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 500 }] }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "Proses restart (1 jam)",
+      "description": "Berapa kali proses aplikasi mulai ulang dalam 1 jam terakhir (crash, OOM, atau rollout).",
+      "gridPos": { "x": 0, "y": 17, "w": 6, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "sum(changes(process_start_time_seconds{job=\"capstone-app\"}[1h])) or vector(0)" }],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Memori proses (RSS) — limit pod 512 MiB",
+      "gridPos": { "x": 6, "y": 17, "w": 9, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "process_resident_memory_bytes{job=\"capstone-app\"}", "legendFormat": "RSS" }],
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Event loop lag p99 (Node.js)",
+      "description": "Kalau naik, proses Node sibuk sehingga semua request ikut lambat.",
+      "gridPos": { "x": 15, "y": 17, "w": 9, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "1000 * nodejs_eventloop_lag_p99_seconds{job=\"capstone-app\"}", "legendFormat": "p99" }],
+      "fieldConfig": { "defaults": { "unit": "ms" }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } }
+    }
+  ]
+}

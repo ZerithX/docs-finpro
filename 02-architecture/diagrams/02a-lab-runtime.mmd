@@ -1,0 +1,33 @@
+%% View 2a — Implementasi lab: jalur runtime + trust boundary B1–B5
+flowchart LR
+  classDef ext fill:#FFFFFF,stroke:#555,color:#222
+  classDef k8s fill:#D9ECFF,stroke:#2F6DB5,color:#222
+  classDef dock fill:#DFF3E0,stroke:#3C8D40,color:#222
+  classDef ops fill:#EFE5FA,stroke:#7A4FB0,color:#222
+  classDef plan fill:#F4F4F4,stroke:#999,stroke-dasharray: 5 5,color:#555
+
+  CLI["Klien<br/>Swagger UI / curl"]:::ext
+
+  subgraph K3D["Cluster k3d-capstone (k3s v1.35.5, server-0 + agent-0) · namespace capstone"]
+    ING["Traefik Ingress<br/>capstone.localhost<br/>(host :8088)"]:::k8s
+    SVC["Service capstone-app<br/>ClusterIP :80"]:::k8s
+    POD["Pod capstone-app · replicas 1<br/>Node.js 24 + TypeScript (Hono, Drizzle)<br/>readiness /q/health/ready (cek DB)<br/>liveness /q/health/live<br/>req 100m/192Mi · lim 500m/512Mi"]:::k8s
+    CM["ConfigMap capstone-app-config<br/>Secret capstone-app-secret<br/>(Secret via kubectl, tidak di Git)"]:::k8s
+    MSVC["Service capstone-app-metrics<br/>NodePort 30081"]:::k8s
+  end
+
+  subgraph NET["Docker network capstone-net (di luar cluster)"]
+    PG[("PostgreSQL 17<br/>postgres:5432<br/>shared schema + tenant_id")]:::dock
+    KC["Keycloak 26.8.1<br/>realm capstone<br/>[CEK: integrasi app]"]:::plan
+    PROM["Prometheus + Grafana<br/>CampusDesk — Service Health"]:::ops
+  end
+
+  CLI -->|"B1 · HTTP, tanpa TLS di lab"| ING
+  ING --> SVC
+  SVC -->|"B2 · JWT + role + tenant context"| POD
+  CM -->|"env"| POD
+  POD -->|"B4 + B5 · SQL, filter tenant_id"| PG
+  POD -.->|"B3 · JWKS"| KC
+  CLI -.->|"B3 · login, token"| KC
+  PROM -->|"scrape /q/metrics"| MSVC
+  MSVC --> POD
