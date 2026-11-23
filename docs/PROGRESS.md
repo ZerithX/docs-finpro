@@ -28,22 +28,33 @@ Legenda: ✅ selesai · 🟡 sebagian · ⬜ belum mulai · ⏳ menunggu pihak l
 
 ## Log task (terbaru di atas)
 
-### 2026-11-23 — BE-2 auth + TenantContext · M2 · 🟡 (kode + tes lokal selesai; belum commit, belum di cluster)
+### 2026-11-23 — PD-1 ConfigMap OIDC · M3 · ✅
 
-- **Owner:** Radya (kode ditulis Claude Code, perlu direview Radya + B). Branch `feat/auth` di `capstone-app` dari `bfe1773`, **belum di-commit/push**.
+- **Owner:** Radya (diambil alih dari B karena B belum siap; PRD 02 mengizinkan "atau Radya bila B belum siap"). Branch `ops/oidc-config` di `capstone-gitops` dari `17d1dea`.
+- **Perubahan:** `base/configmap.yaml`: `OIDC_ISSUER` `host.k3d.internal:8081` → `http://keycloak:8080/realms/capstone`; tambah `OIDC_TOKEN_ISSUER=http://localhost:8081/realms/capstone` (ADR-012). Deployment memakai `envFrom`, jadi tidak perlu diubah.
+- **Validasi lokal:** `kubectl kustomize overlays/dev` exit 0; ConfigMap hasil render memuat kedua nilai.
+- **Keputusan urutan:** PD-1 di-merge **sebelum** BE-2. App lama (`bfe1773`) tidak membaca variabel OIDC, jadi PD-1 aman sendirian; sebaliknya BE-2 tanpa PD-1 membuat semua `/api/*` 401.
+- **Bukti cluster:** commit `b5e0249` → merge Gitea PR #2 `da85b12` (23 Nov 15:02:46 WIB) → Argo CD Synced/Healthy di `da85b12`; ConfigMap dan env pod memuat kedua nilai (dicek 21:12 WIB). Uji dari pod sebelum merge: JWKS `keycloak:8080` → 200 (2 kunci), `host.k3d.internal:8081` → ECONNREFUSED.
+- **Observasi:** setelah lab dinyalakan ulang, pod sempat CrashLoopBackOff (`getaddrinfo EAI_AGAIN postgres`) lalu pulih sendiri; `GET /api/units` kembali 200 pada 21:12 WIB. Akar masalah DNS belum ditelusuri.
+
+### 2026-11-23 — BE-2 auth + TenantContext · M2 · 🟡 (terbukti di cluster; ADR-012 belum Diterima)
+
+- **Owner:** Radya (kode ditulis Claude Code, perlu direview Radya + B). Branch `feat/auth` di `capstone-app` dari `bfe1773`, commit `9d455cd`, `d96b793`, `23c8355`, sudah di-merge (PR #5).
 - **Perubahan:** dependensi `jose` 6.2.18; modul `src/modules/auth/` (`token-verifier.ts`, `auth.middleware.ts`, `auth.context.ts`); `loadOidcConfig` (`OIDC_ISSUER`, `OIDC_TOKEN_ISSUER`, `OIDC_CLIENT_ID`); `requireAuth` di `/api/*`; `/q/*` tetap terbuka; skema `bearerAuth` di OpenAPI; `listUnits` difilter lewat `TenantScope` di query.
 - **Verifikasi token:** tanda tangan RS256 (JWKS), `iss`, `exp`, `sub` wajib, `azp === capstone-app`, `typ === Bearer` (ID token ditolak). Role hanya dari `realm_access.roles`; tenant dari tepat satu grup `/tenant-*` yang cocok dengan `units.code`.
 - **Bukti lokal (23 Nov ±04:58 WIB):** `npm run typecheck` lolos; `npm test` **38/38** (sebelumnya 12) dengan kunci lokal `jose`. Uji mutasi: filter tenant dibuang → 2 tes gagal (tes bermakna). Server lokal + token Keycloak asli: tanpa token 401; `usera` → `[tenant-a]`; `userb` → `[tenant-b]`; `operator`/`appadmin` → 2 unit; token dari `127.0.0.1:8081` → 401 (`unexpected "iss" claim value`, membuktikan risiko ADR-012).
 - **Audit:** `npm audit --omit=dev` 0 vulnerability; 4 moderate di dev dependency `esbuild` (sudah ada sebelumnya, tidak masuk image) → info untuk C.
-- **Belum (syarat "Selesai jika"):** CI hijau di Gitea; PD-1 (ConfigMap `OIDC_ISSUER=http://keycloak:8080/...`, `OIDC_TOKEN_ISSUER=http://localhost:8081/...`, oleh B); `curl` token asli ke `http://capstone.localhost:8088/api/units` → 200 di cluster; ADR-012 → *Diterima*.
-- **Catatan:** setelah di-merge tetapi sebelum PD-1, semua `/api/*` di cluster akan 401 (ConfigMap masih `host.k3d.internal`). Merge sebaiknya bersamaan dengan PD-1.
+- **Delivery:** GitHub PR #5 → `0ccd99d` → CI run 7 (gagal terputus saat Docker bermasalah, diulang: sukses 54 detik) → GitOps `867a927` (21:38:14 WIB) → Argo CD Synced/Healthy setelah hard refresh manual → image `0ccd99d22fab`.
+- **Bukti cluster (21:44:52 WIB):** `03-application-data/BE-2_auth-cluster.md`: tanpa token 401; `usera`/`userb` hanya unitnya; `operator`/`appadmin` 2 unit; token dari `127.0.0.1` 401.
+- **Belum:** ADR-012 → *Diterima* (review B/C lewat PR, BE-10); review anggota lain untuk PR #5 belum diverifikasi.
+- **Catatan:** PD-1 sudah di-merge lebih dulu, jadi tidak ada jeda 401 akibat konfigurasi.
 
 ### 2026-11-23 — BE-1 mapper grup Keycloak · M2 · ✅
 
 - **Owner:** Radya (perintah dijalankan Claude Code, dijelaskan per langkah).
 - **Perubahan (Keycloak `capstone`, bukan repo):** protocol mapper `groups` (Group Membership, full path, access/ID/userinfo token) di client `capstone-app`; profil `usera`, `userb`, `operator`, `appadmin` diisi email `<user>@campusdesk.local` + nama + `emailVerified=true`. Grup tidak diubah (sudah benar).
 - **Observasi:** token `usera` dari `localhost:8081` (iat 2026-11-23 04:37:11 WIB) berisi `"groups": ["/tenant-a"]`, `realm_access.roles: ["user"]`, `iss=http://localhost:8081/realms/capstone`, `azp=capstone-app`.
-- **Temuan lab (kandidat T11):** user hasil import realm dosen ditolak `Account is not fully set up` karena Keycloak 26 mewajibkan email/nama. Juga: `up-core.ps1` perlu `pwsh -ExecutionPolicy Bypass` di laptop Radya.
+- **Temuan lab (nomor T menyusul):** user hasil import realm dosen ditolak `Account is not fully set up` karena Keycloak 26 mewajibkan email/nama. Juga: `up-core.ps1` perlu `pwsh -ExecutionPolicy Bypass` di laptop Radya.
 - **Bukti:** `06-security/BE-1_keycloak-groups-mapper.md`, screenshot `06-security/BE-1_usera-token-decoded.png`.
 - **Belum:** perubahan hilang jika realm di-import ulang sampai C mengekspor realm (SEC-1); token `userb`/`operator`/`appadmin` belum di-decode.
 
