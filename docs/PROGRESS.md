@@ -28,6 +28,18 @@ Legenda: ✅ selesai · 🟡 sebagian · ⬜ belum mulai · ⏳ menunggu pihak l
 
 ## Log task (terbaru di atas)
 
+### 2026-11-23 — BE-5 alur status + audit dan BE-7 tes negatif · M2/M6 · 🟡 (terbukti di CI dan cluster; pemeriksaan matriks oleh C belum)
+
+- **Owner:** Radya (kode ditulis Claude Code, perlu direview Radya + B; matriks diperiksa C). PR #8 (`eae9ed5`) dan PR #9 (`05ab462`) → `main` `496d0a0`.
+- **BE-5:** `ticket.transitions.ts` (konstanta `TRANSITIONS`), `ticket.workflow.ts` (404 → 403 → 409, satu transaksi dengan audit), `POST /api/tickets/{id}/assign` dan `/status`. UPDATE memeriksa status lama sehingga dua request bersamaan tidak sama-sama menang.
+- **BE-7:** `test/authz-matrix.test.ts`, satu tes per sel matriks (14 tes).
+- **Bukti lokal:** typecheck dan build lolos; `npm test` 149/149, diulang 3 kali. Uji mutasi 9/9 terdeteksi (putaran pertama 7/9; dua tes lalu diperkuat). Satu tes BE-4 diperbaiki karena bergantung pada isi DB tes.
+- **Keputusan:** hanya aksi operator yang berhasil masuk `audit_log`; pembacaan dan aksi pelapor tidak. `admin` tidak boleh assign/ubah status (kontrak PRD 01 §6). OPEN → ASSIGNED hanya lewat `/assign`. Tidak ada reopen. Kesesuaian dengan ADR-004 perlu dikonfirmasi C.
+- **Limitasi:** pelapor dikenali dari `preferred_username` + unit, bukan `sub`.
+- **Delivery dan bukti:** CI run 11 sukses (2m21s, 149/149) → GitOps `6d59b60` → Argo CD Synced/Healthy → image `496d0a0f10f0`. Uji cluster 23:21:00 WIB: 22 kasus sesuai, `audit_log` 7 baris: `06-security/BE-5_BE-7_alur-authz.md`.
+- **Trivy run 11 (info SEC-3):** image Alpine 0; paket Node 6 HIGH, 0 CRITICAL (`brace-expansion` 5.0.9: 2, `undici` 6.28.0: 4).
+- **Belum diverifikasi:** review anggota lain PR #8/#9 (di-merge sebelum CI PR terlihat selesai), matriks oleh C, kesesuaian ADR-004.
+
 ### 2026-11-23 — BE-3 migrasi tiket + BE-4 tiket dan filter tenant · M2 · ✅ (review anggota lain belum diverifikasi)
 
 - **Owner:** Radya (kode ditulis Claude Code, perlu direview Radya + B). PR #6 (`d426ae3`) dan PR #7 (`0b62348`) → `main` `74e4beb`. Dua ID dikerjakan dalam satu sesi atas permintaan Radya; commit/PR tetap terpisah.
