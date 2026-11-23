@@ -28,6 +28,33 @@ Legenda: ✅ selesai · 🟡 sebagian · ⬜ belum mulai · ⏳ menunggu pihak l
 
 ## Log task (terbaru di atas)
 
+### 2026-11-23 — BE-2 auth + TenantContext · M2 · 🟡 (kode + tes lokal selesai; belum commit, belum di cluster)
+
+- **Owner:** Radya (kode ditulis Claude Code, perlu direview Radya + B). Branch `feat/auth` di `capstone-app` dari `bfe1773`, **belum di-commit/push**.
+- **Perubahan:** dependensi `jose` 6.2.18; modul `src/modules/auth/` (`token-verifier.ts`, `auth.middleware.ts`, `auth.context.ts`); `loadOidcConfig` (`OIDC_ISSUER`, `OIDC_TOKEN_ISSUER`, `OIDC_CLIENT_ID`); `requireAuth` di `/api/*`; `/q/*` tetap terbuka; skema `bearerAuth` di OpenAPI; `listUnits` difilter lewat `TenantScope` di query.
+- **Verifikasi token:** tanda tangan RS256 (JWKS), `iss`, `exp`, `sub` wajib, `azp === capstone-app`, `typ === Bearer` (ID token ditolak). Role hanya dari `realm_access.roles`; tenant dari tepat satu grup `/tenant-*` yang cocok dengan `units.code`.
+- **Bukti lokal (23 Nov ±04:58 WIB):** `npm run typecheck` lolos; `npm test` **38/38** (sebelumnya 12) dengan kunci lokal `jose`. Uji mutasi: filter tenant dibuang → 2 tes gagal (tes bermakna). Server lokal + token Keycloak asli: tanpa token 401; `usera` → `[tenant-a]`; `userb` → `[tenant-b]`; `operator`/`appadmin` → 2 unit; token dari `127.0.0.1:8081` → 401 (`unexpected "iss" claim value`, membuktikan risiko ADR-012).
+- **Audit:** `npm audit --omit=dev` 0 vulnerability; 4 moderate di dev dependency `esbuild` (sudah ada sebelumnya, tidak masuk image) → info untuk C.
+- **Belum (syarat "Selesai jika"):** CI hijau di Gitea; PD-1 (ConfigMap `OIDC_ISSUER=http://keycloak:8080/...`, `OIDC_TOKEN_ISSUER=http://localhost:8081/...`, oleh B); `curl` token asli ke `http://capstone.localhost:8088/api/units` → 200 di cluster; ADR-012 → *Diterima*.
+- **Catatan:** setelah di-merge tetapi sebelum PD-1, semua `/api/*` di cluster akan 401 (ConfigMap masih `host.k3d.internal`). Merge sebaiknya bersamaan dengan PD-1.
+
+### 2026-11-23 — BE-1 mapper grup Keycloak · M2 · ✅
+
+- **Owner:** Radya (perintah dijalankan Claude Code, dijelaskan per langkah).
+- **Perubahan (Keycloak `capstone`, bukan repo):** protocol mapper `groups` (Group Membership, full path, access/ID/userinfo token) di client `capstone-app`; profil `usera`, `userb`, `operator`, `appadmin` diisi email `<user>@campusdesk.local` + nama + `emailVerified=true`. Grup tidak diubah (sudah benar).
+- **Observasi:** token `usera` dari `localhost:8081` (iat 2026-11-23 04:37:11 WIB) berisi `"groups": ["/tenant-a"]`, `realm_access.roles: ["user"]`, `iss=http://localhost:8081/realms/capstone`, `azp=capstone-app`.
+- **Temuan lab (kandidat T11):** user hasil import realm dosen ditolak `Account is not fully set up` karena Keycloak 26 mewajibkan email/nama. Juga: `up-core.ps1` perlu `pwsh -ExecutionPolicy Bypass` di laptop Radya.
+- **Bukti:** `06-security/BE-1_keycloak-groups-mapper.md`, screenshot `06-security/BE-1_usera-token-decoded.png`.
+- **Belum:** perubahan hilang jika realm di-import ulang sampai C mengekspor realm (SEC-1); token `userb`/`operator`/`appadmin` belum di-decode.
+
+### 2026-11-17 — R3 sebagian di-merge dan ter-deploy: `sla_policy` · M2/M4 · ✅
+
+- **Owner:** Radya. PR GitHub #4 `feat/sla-policy` → merge `bfe1773`.
+- **Rantai delivery (bukti traceability kedua):** `main` GitHub → `git push gitea main` → CI Gitea hijau → commit GitOps `17d1dea` "deploy: capstone-app bfe17734cc8c" oleh *Capstone CI* (03:33 UTC = 10:33 WIB) → Argo CD `Synced` di revisi `17d1dea`, `Healthy` → Deployment image `registry:5000/student/capstone-app:bfe17734cc8c` → ReplicaSet baru `capstone-app-85fc6d899c` (1/1 Ready). ReplicaSet lama (`5bf4449848` = d35da36, `5647f98fb6` = 6aa3092, `77d974b8b5` = initial) tersisa dengan 0 replica untuk rollback.
+- **Observasi:** `curl http://capstone.localhost:8088/api/sla-policies` → 4 prioritas: KRITIS 30/240, TINGGI 60/480, SEDANG 240/1440, RENDAH 480/4320 (menit). Ini juga membuktikan migrasi `drizzle/0001_sla_policy.sql` berjalan di DB `capstone` cluster.
+- **Catatan:** Argo CD menerapkan perubahan lewat polling (±3 menit); `refresh=hard` hanya mempercepat. `git status` di `capstone-gitops` sempat menunjukkan `overlays/dev/kustomization.yaml` berubah karena CRLF (`core.autocrlf`), isi sama; tidak di-commit.
+- **Belum dicatat:** nomor run CI dan jumlah tes di run itu; waktu merge → Running (QS6); screenshot Swagger `/api/sla-policies` untuk `03-application-data/`. Endpoint masih tanpa auth sampai R2.
+
 ### 2026-11-13 — File ADR 001–013 dan 015 dibuat · M1 · 🟡
 
 - **Owner:** Radya (file ditulis Claude, direview Radya). Pembagian owner mengikuti `docs/TASKS_M2-M5.md` (R8, B5, C3, C4).
