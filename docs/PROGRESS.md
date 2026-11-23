@@ -28,6 +28,16 @@ Legenda: ✅ selesai · 🟡 sebagian · ⬜ belum mulai · ⏳ menunggu pihak l
 
 ## Log task (terbaru di atas)
 
+### 2026-11-23 — BE-3 migrasi tiket + BE-4 tiket dan filter tenant · M2 · ✅ (review anggota lain belum diverifikasi)
+
+- **Owner:** Radya (kode ditulis Claude Code, perlu direview Radya + B). PR #6 (`d426ae3`) dan PR #7 (`0b62348`) → `main` `74e4beb`. Dua ID dikerjakan dalam satu sesi atas permintaan Radya; commit/PR tetap terpisah.
+- **BE-3:** `drizzle/0002_tickets.sql` (`tickets`, `audit_log`, enum kategori/status, index `(unit_id, status)`, CHECK urutan tenggat). Migrasi 0000/0001 tidak berubah.
+- **BE-4:** modul `src/modules/ticket/`; `POST /api/tickets`, `GET /api/tickets`, `GET /api/tickets/{id}`. Semua pembacaan tiket lewat satu fungsi (`selectTickets`) yang mewajibkan `TenantScope`.
+- **Bukti lokal:** BE-3 saja `npm test` 47/47; BE-3 + BE-4 84/84; typecheck dan build lolos. Uji mutasi (filter tenant dibuang): 6 tes gagal, lalu dipulihkan.
+- **Keputusan kecil:** Content-Type selain JSON → 415 (bawaan library); field tak dikenal di body dibuang; id bukan bilangan positif → 400. Kolom `version` (handoff) tidak dibuat karena tidak ada di PRD 01.
+- **Terbuka:** audit untuk *pembacaan* lintas tenant oleh operator/admin ada di PRD tim M2-3 tetapi tidak di PRD 01 (BE-5 hanya aksi); daftar tiket belum berhalaman (relevan untuk CAP-1).
+- **Delivery dan bukti cluster (22:09:42 WIB):** CI run 10 sukses (1m39s) → GitOps `ebf661a` → Argo CD Synced/Healthy → image `74e4beb9c509`. Migrasi 0002 tercatat di DB; semua kasus uji token asli sesuai: `03-application-data/BE-3_BE-4_tiket-cluster.md`.
+
 ### 2026-11-23 — PD-1 ConfigMap OIDC · M3 · ✅
 
 - **Owner:** Radya (diambil alih dari B karena B belum siap; PRD 02 mengizinkan "atau Radya bila B belum siap"). Branch `ops/oidc-config` di `capstone-gitops` dari `17d1dea`.
