@@ -53,3 +53,5 @@ SEC-3..6 (C), OPS-1..2 (C), CAP-3..4 (C): tidak bergantung pada backend.
 3. Tidak ada hasil yang dikarang. Yang belum terbukti ditulis sebagai limitasi.
 4. Item yang selesai dicatat di `docs/PROGRESS.md` dengan ID-nya (misalnya "BE-2 selesai, PR #5").
 5. Item yang dipotong tidak dihapus: pindahkan ke roadmap (CAP-4) dan laporan bagian 11.
+6. **Nama file evidence diawali ID tugas**, misalnya `08-reliability-recovery/REL-4_restore-validasi.md` atau `06-security/SEC-3_trivy.md`. README folder bukan bukti.
+7. Cek posisi tim kapan saja: `./scripts/milestone-checks/run-all.sh` (PASS / FAIL / SKIP per milestone, FAIL menyebut ID tugas). Lihat `scripts/milestone-checks/README.md`.
