@@ -7,15 +7,15 @@
 | Owner | Radya |
 | Milestone | M1 (keputusan), M2 (implementasi R4) |
 
-> Draf disiapkan dengan bantuan Claude dari dokumen tim. Fitur tiket belum diimplementasikan; keputusan ini dipakai sebagai acuan R4.
+> Draf disiapkan dengan bantuan Claude dari dokumen tim. Implementasi: BE-4 (tenggat) dan BE-6 (breach, 24 Nov).
 
 ## Konteks
 - SLA berdasarkan prioritas (KRITIS/TINGGI/SEDANG/RENDAH). Tabel `sla_policy` sudah ada (`drizzle/0001_sla_policy.sql`, branch `feat/sla-policy`), dengan nilai usulan 30/240, 60/480, 240/1440, 480/4320 menit (respon/selesai).
-- Admin bisa mengubah kebijakan SLA (`PUT /api/sla-policies`). Kalau tenggat dihitung ulang dari kebijakan terkini, tiket lama ikut berubah status SLA-nya.
+- Kebijakan SLA bisa berubah lewat migrasi (`PUT /api/sla-policies` dipotong per 23 Nov). Kalau tenggat dihitung ulang dari kebijakan terkini, tiket lama ikut berubah status SLA-nya.
 - Laporan SLA per unit dan metrik `campusdesk_sla_breached_tickets` harus konsisten walaupun aplikasi berjalan dengan lebih dari satu replica.
 
 ## Keputusan
-Saat tiket dibuat, aplikasi membaca kebijakan untuk prioritas tiket lalu **menyimpan `response_due_at` dan `resolve_due_at`** di baris tiket. `first_response_at` diisi pada transisi pertama `OPEN → ASSIGNED`. Tiket dinyatakan **breach lewat query** (`now() > due_at` dan timestamp pasangannya masih kosong), bukan lewat job terjadwal yang menulis flag.
+Saat tiket dibuat, aplikasi membaca kebijakan untuk prioritas tiket lalu **menyimpan `response_due_at` dan `resolve_due_at`** di baris tiket. `first_response_at` diisi pada transisi pertama `OPEN → ASSIGNED`. Tiket dinyatakan **breach lewat query** (respons terlambat: `first_response_at`, atau waktu sekarang jika masih kosong, melewati `response_due_at`), bukan lewat job terjadwal yang menulis flag.
 
 ## Alternatif yang dipertimbangkan
 - **Hitung tenggat setiap kali dibaca dari kebijakan terkini:** tidak ada kolom tambahan, tapi perubahan kebijakan mengubah riwayat secara diam-diam, sehingga laporan SLA bulan lalu bisa berbeda kalau dibuka hari ini. Ditolak karena merusak audit.
@@ -24,5 +24,6 @@ Saat tiket dibuat, aplikasi membaca kebijakan untuk prioritas tiket lalu **menyi
 
 ## Konsekuensi
 - **Positif:** riwayat SLA stabil dan bisa diaudit; tidak ada job latar sehingga aman di banyak replica; breach bisa dites deterministik dengan jam tetap (fixed clock).
-- **Negatif / risiko sisa:** perubahan kebijakan hanya berlaku untuk tiket baru (harus dijelaskan ke admin); dua kolom tambahan per tiket; query laporan sedikit lebih kompleks.
+- **Negatif / risiko sisa:** perubahan kebijakan hanya berlaku untuk tiket baru (harus dijelaskan ke Kepala Unit TI); dua kolom tambahan per tiket; query laporan sedikit lebih kompleks.
+- **Bukti (24 Nov, lokal):** `capstone-app/test/sla-report.test.ts` (jam tetap: menit 30 belum breach, menit 31 breach). Belum di CI/cluster. Breach *penyelesaian* (`resolve_due_at`) belum dilaporkan.
 - **Perlu dibuktikan:** tes "tiket melewati `response_due_at` tanpa assign → breach" dengan jam tetap (acceptance M2, QS2); tiket yang dibuat sebelum dan sesudah perubahan kebijakan punya tenggat berbeda.

@@ -2,21 +2,21 @@
 
 | Field | Isi |
 |---|---|
-| Status | Diusulkan |
+| Status | Diterima (24 Nov, konfirmasi owner; tanpa review B/C) |
 | Tanggal | 2026-11-13 |
 | Owner | Radya |
 | Milestone | M1 |
 
-> Draf disiapkan dengan bantuan Claude dari dokumen tim. Radya mereview, memastikan bisa menjelaskannya, lalu mengubah status menjadi *Diterima* lewat PR yang direview B atau C.
+> Draf disiapkan dengan bantuan Claude dari dokumen tim. Diterima atas keputusan Radya sebagai owner.
 
 ## Konteks
-- Domain CampusDesk satu konteks bisnis: unit (tenant), kebijakan SLA, tiket, komentar, dan audit log. Kelimanya saling bergantung erat (tiket membutuhkan tenant dan SLA dalam satu transaksi).
+- Domain CampusDesk satu konteks bisnis: unit (tenant), kebijakan SLA, tiket, dan audit log. Keempatnya saling bergantung erat (tiket membutuhkan tenant dan SLA dalam satu transaksi).
 - Tim 3 orang, ±4 minggu sampai defense (~2 Des), dengan feature freeze 17 Nov. Hanya satu orang yang menulis backend (lihat perubahan peran 10 Nov di `docs/PROGRESS.md`).
 - PRD §4 menaruh *microservices* dan *message broker* di luar scope. Guideline tidak mewajibkan microservices; yang dinilai adalah apakah tim bisa menjelaskan batas dan trade-off.
 - Kontrak platform yang sudah berjalan (satu image, satu Deployment, satu Service, satu Ingress per environment) dibangun di atas satu artefak.
 
 ## Keputusan
-CampusDesk dibangun sebagai **satu aplikasi yang di-deploy sebagai satu unit (satu image, satu Deployment)**, dengan kode dipisah per modul domain di `src/modules/` (saat ini `unit/` dan `sla/`, nanti `ticket/`, `comment/`, `audit/`) dan kode lintas modul di `src/platform/` (health, metrics) serta `src/common/` (format error). Semua modul memakai satu database PostgreSQL.
+CampusDesk dibangun sebagai **satu aplikasi yang di-deploy sebagai satu unit (satu image, satu Deployment)**, dengan kode dipisah per modul domain di `src/modules/` (`auth/`, `unit/`, `sla/`, `ticket/` termasuk audit, dan `report/`; komentar dipotong per 23 Nov) dan kode lintas modul di `src/platform/` (health, metrics) serta `src/common/` (format error). Semua modul memakai satu database PostgreSQL.
 
 ## Alternatif yang dipertimbangkan
 - **Microservices (mis. layanan tiket dan layanan SLA terpisah):** bisa di-scale dan di-deploy terpisah, tapi menambah pipeline CI, manifest, dan Argo CD Application per layanan, menambah kegagalan jaringan antar-layanan, dan butuh konsistensi data lintas layanan. Untuk tim 3 orang dan satu domain kecil, biayanya jauh lebih besar dari manfaatnya. Ditolak.
