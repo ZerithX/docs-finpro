@@ -2,34 +2,32 @@
 
 | Field | Isi |
 |---|---|
-| Status | Draf (menunggu owner) |
-| Tanggal | 2026-11-13 |
+| Status | Draf (menunggu review) |
+| Tanggal | 2026-11-24 |
 | Owner | B |
 | Milestone | M1 / M4 |
-
-> **Catatan untuk owner:** bagian *Konteks* sudah diisi dari dokumen tim (PRD, PROGRESS, Rencana Kerja, proposal) supaya kamu tidak mulai dari nol. Bagian *Keputusan*, *Alternatif*, dan *Konsekuensi* **ditulis sendiri oleh owner**, karena di defense setiap anggota harus bisa menjelaskan ADR ini dalam ±1 menit. Pakai pertanyaan pemandu, lalu hapus blok ini dan bagian *Pertanyaan pemandu* sebelum PR. Kirim lewat branch `docs/adr-NNN-...` dan minta review dari anggota lain.
 
 ## Konteks
 - Alur CI dosen: verify → build image (tag = short SHA) → Trivy → push ke `registry:5000` → CI meng-update `newTag` di `overlays/dev`. CI **tidak** menjalankan `kubectl apply`; Argo CD yang me-reconcile (Infra Guide §12, PRD §5 butir 3).
 - Bukti awal: CI run #2 hijau, commit GitOps `c8162ce` "deploy: capstone-app 6aa3092464c0" oleh Capstone CI. Tag dev saat ini `d35da363e4c2`.
 - Temuan A1: step publish berjalan juga saat `pull_request`, sehingga kode yang belum direview bisa ter-deploy ke dev. Perbaikan ada di branch `fix/ci-publish-on-push` (`d8c8ba9`), belum di-merge.
-- Rencana M4: promosi ke staging/prod = PR di repo GitOps yang menyalin tag dev (tanpa rebuild); prod sync manual; rollback = `git revert` commit promosi; rilis `v0.1.0` dipetakan ke SHA image.
-
-## Pertanyaan pemandu
-1. Kenapa image tidak di-build ulang untuk staging/prod? Apa yang dijamin dengan memakai image yang sama?
-2. Kenapa tag memakai SHA, bukan `latest`? Apa bedanya tag dan digest?
-3. Kenapa CI tidak boleh `kubectl apply`? Siapa "sumber kebenaran" keadaan cluster?
-4. Kenapa prod disinkronkan manual, sedangkan dev/staging otomatis?
-5. Bagaimana rollback dilakukan, dan apa yang membuktikannya (M4-5)?
+- Rencana awal M4: promosi ke staging/prod dirancang melalui PR di repo GitOps yang menyalin tag dev tanpa rebuild, dengan prod sync manual. Namun, implementasi staging/prod kemudian dipotong dari proven scope karena keterbatasan waktu dan kebutuhan pengujian tambahan.
+- Rollback dirancang menggunakan `git revert` terhadap perubahan GitOps; rilis `v0.1.0` dipetakan ke SHA image.
 
 ## Keputusan
-_Ditulis owner: apa yang dipilih, dalam satu atau dua kalimat tegas._
+
+Image aplikasi dibangun satu kali oleh CI menggunakan tag berdasarkan short SHA commit, kemudian image yang sama digunakan untuk deployment melalui GitOps tanpa melakukan rebuild untuk environment berikutnya. Perubahan environment dilakukan dengan memperbarui tag image pada repository GitOps, sedangkan cluster direkonsiliasi oleh Argo CD.
 
 ## Alternatif yang dipertimbangkan
-- **Alternatif A:** _kelebihan, kekurangan, alasan tidak dipilih_
-- **Alternatif B:** _..._
+
+- **Alternatif A: Build image ulang untuk setiap environment:** Memungkinkan konfigurasi build berbeda untuk setiap environment, tetapi berisiko menghasilkan image yang berbeda sehingga artifact yang diuji tidak identik dengan artifact yang dijalankan di environment berikutnya. Alternatif ini tidak dipilih karena mengurangi traceability antara source commit, image, dan deployment.
+
+- **Alternatif B: Menggunakan tag `latest`:** Lebih sederhana karena tidak perlu memperbarui tag setiap build, tetapi sulit memastikan versi image yang sedang berjalan dan berisiko membuat deployment mengambil image yang berubah. Tidak dipilih karena project membutuhkan traceability berdasarkan commit.
 
 ## Konsekuensi
-- Positif: _..._
-- Negatif / risiko sisa: _..._
-- Yang perlu dipantau atau dibuktikan: _..._
+
+- **Positif:** Image yang diuji dan dipromosikan tetap merupakan artifact yang sama. Penggunaan short SHA memudahkan penelusuran dari commit source ke image dan deployment GitOps. Rollback juga dapat dilakukan dengan mengembalikan referensi image ke versi sebelumnya melalui perubahan GitOps.
+
+- **Negatif / risiko sisa:** Repository GitOps harus diperbarui setiap kali image baru dipromosikan. Selain itu, penggunaan short SHA tetap merupakan tag, sehingga identifikasi artifact paling kuat tetap memerlukan verifikasi terhadap registry/digest jika diperlukan.
+
+- **Yang perlu dipantau atau dibuktikan:** Pastikan CI hanya melakukan publish image pada push ke `main`, bukan pada `pull_request`. Buktikan hubungan commit source → tag image → commit GitOps → deployment melalui Argo CD. Untuk rollback, buktikan bahwa `git revert` terhadap perubahan GitOps dapat mengembalikan deployment ke image sebelumnya.

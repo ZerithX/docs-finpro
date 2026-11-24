@@ -2,12 +2,10 @@
 
 | Field | Isi |
 |---|---|
-| Status | Draf (menunggu owner) — perubahannya sudah berjalan sejak 28 Okt |
-| Tanggal | 2026-11-13 |
+| Status | Draf (menunggu review) |
+| Tanggal | 2026-11-24 |
 | Owner | B |
 | Milestone | M1 / M3 |
-
-> **Catatan untuk owner:** bagian *Konteks* sudah diisi dari dokumen tim (PRD, PROGRESS, Rencana Kerja, proposal) supaya kamu tidak mulai dari nol. Bagian *Keputusan*, *Alternatif*, dan *Konsekuensi* **ditulis sendiri oleh owner**, karena di defense setiap anggota harus bisa menjelaskan ADR ini dalam ±1 menit. Pakai pertanyaan pemandu, lalu hapus blok ini dan bagian *Pertanyaan pemandu* sebelum PR. Kirim lewat branch `docs/adr-NNN-...` dan minta review dari anggota lain.
 
 ## Konteks
 **Ini sudah diterapkan dan berjalan**; ADR ini mencatat alasannya karena menyimpang dari template dosen.
@@ -18,20 +16,17 @@
 - Bukti hasil: walking skeleton `GET /api/units` mengembalikan 2 unit dari DB (`03-application-data/api_test.txt`).
 - Rencana B2: nama DB berubah per env (`campusdesk_dev` dst.), host tetap `postgres:5432`.
 
-## Pertanyaan pemandu
-1. Kenapa `host.k3d.internal` gagal? Apa artinya "bind ke 127.0.0.1"?
-2. Kenapa memakai nama service Docker lebih baik daripada membuka Postgres ke `0.0.0.0`?
-3. Apa ketergantungan baru yang muncul (cluster k3d harus ikut `capstone-net`)?
-4. Bukti apa yang menunjukkan perubahan ini benar? Status ADR ini apa (*Diterima*)?
-
 ## Keputusan
-_Ditulis owner: apa yang dipilih, dalam satu atau dua kalimat tegas._
+Aplikasi menggunakan `postgres:5432` sebagai host database pada `DB_URL`, karena PostgreSQL berada pada jaringan Docker `capstone-net` yang dapat diakses oleh pod. Pendekatan ini dipilih daripada membuka PostgreSQL ke host lain atau menggunakan `host.k3d.internal`.
 
 ## Alternatif yang dipertimbangkan
-- **Alternatif A:** _kelebihan, kekurangan, alasan tidak dipilih_
-- **Alternatif B:** _..._
+- **Alternatif A: Menggunakan `host.k3d.internal:5432`:** Sesuai dengan template awal dosen dan memungkinkan aplikasi mengakses PostgreSQL melalui host laptop. Namun, pendekatan ini gagal karena PostgreSQL hanya melakukan bind ke `127.0.0.1`, sehingga koneksi dari pod melalui `host.k3d.internal` ditolak. Alternatif ini tidak dipilih.
+
+- **Alternatif B: Membuka PostgreSQL ke `0.0.0.0:5432`:** Memungkinkan koneksi dari jaringan lain, tetapi memperluas exposure PostgreSQL dan tidak diperlukan karena pod sudah dapat mengakses database melalui `capstone-net`. Alternatif ini tidak dipilih.
 
 ## Konsekuensi
-- Positif: _..._
-- Negatif / risiko sisa: _..._
-- Yang perlu dipantau atau dibuktikan: _..._
+- **Positif:** Aplikasi dapat mengakses PostgreSQL melalui nama host `postgres` tanpa membuka PostgreSQL ke seluruh interface host. Konfigurasi juga tetap konsisten dengan jaringan Docker yang digunakan oleh infrastruktur proyek.
+
+- **Negatif / risiko sisa:** Kubernetes workload bergantung pada keterhubungan cluster k3d dengan jaringan `capstone-net`. Jika konfigurasi jaringan atau nama service PostgreSQL berubah, `DB_URL` pada konfigurasi aplikasi juga harus diperbarui.
+
+- **Yang perlu dipantau atau dibuktikan:** Pastikan service/container PostgreSQL tetap tersedia dengan hostname `postgres` pada `capstone-net`. Perubahan `DB_URL` harus dilakukan melalui repository GitOps dan dibuktikan dengan koneksi aplikasi ke database, seperti endpoint `GET /api/units` yang berhasil mengembalikan data dari PostgreSQL.
