@@ -28,9 +28,9 @@ Legenda: ✅ selesai · 🟡 sebagian · ⬜ belum mulai · ⏳ menunggu pihak l
 
 ## Log task (terbaru di atas)
 
-### 2026-11-24 — BE-6 laporan SLA, BE-8 metrik bisnis, BE-9 seed demo, BE-10 revisi ADR · M2/M5/M1 · 🟡 (terbukti lokal; belum di CI/cluster)
+### 2026-11-24 — BE-6 laporan SLA, BE-8 metrik bisnis, BE-9 seed demo, BE-10 revisi ADR · M2/M5/M1 · 🟡 (BE-6 dan BE-8 terbukti di cluster; BE-9 lokal; BE-10 sebagian)
 
-- **Owner:** Radya (kode ditulis Claude Code, perlu direview Radya). Branch lokal `feat/sla-report-metrics-seed` dari `70ef050`, **belum di-commit**.
+- **Owner:** Radya (kode ditulis Claude Code, perlu direview Radya). PR #10 → `main` `754ea29`; CI run 13 sukses → GitOps `119082b` → Argo CD Synced/Healthy → image `754ea29d6a46`.
 - **BE-6:** `GET /api/reports/sla`, `slaSummary` di repository tiket (scope wajib), jam disuntikkan lewat `createApp({ now })`.
 - **BE-8:** counter `campusdesk_tickets_created_total` dan gauge `campusdesk_sla_breached_tickets`. Query gauge dibatasi 2 detik; DB mati tidak mematikan `/q/metrics`.
 - **Bug lama ditemukan dan diperbaiki:** tanpa `pool.on('error')`, koneksi idle yang diputus Postgres mematikan proses Node (direproduksi di DB tes). Berpengaruh ke REL-3.
@@ -38,7 +38,8 @@ Legenda: ✅ selesai · 🟡 sebagian · ⬜ belum mulai · ⏳ menunggu pihak l
 - **BE-10:** isi ADR 001, 005, 012 disesuaikan dengan implementasi; ADR 001 dan 012 *Diterima* atas konfirmasi owner. **Keputusan Radya 24 Nov:** backend tidak menunggu review B/C (menyimpang dari PRD 01 BE-10). ADR-005 menunggu bukti CI/cluster; ADR-009 dan ADR-014 menunggu dosen.
 - **Bukti lokal (13:12–13:16 WIB):** typecheck dan build lolos; `npm test` 166/166; uji mutasi 11/11 terdeteksi. Di `campusdesk_local` dengan token Keycloak asli: user hanya unitnya, appadmin dua unit, operator 403, anonim 401; gauge breach 4 per unit.
 - **Keputusan:** persentase SLA dihitung dari tiket yang sudah direspons atau lewat tenggat; tepat di tenggat = sesuai SLA; operator tidak melihat laporan (kontrak PRD 01 §6).
-- **Belum:** PR, CI, cluster, metrik di Prometheus (syarat BE-8), panel OPS-3 (C), seed di DB cluster, filter periode `from/to` dan breach penyelesaian (tidak diminta PRD 01).
+- **Bukti cluster (13:45–13:46 WIB):** `07-observability-slo/BE-8_BE-6_metrik-laporan-cluster.md`.
+- **Belum:** panel OPS-3 (C), seed di DB cluster, filter periode `from/to` dan breach penyelesaian (tidak diminta PRD 01).
 
 ### 2026-11-24 — Skrip observasi curl → Prometheus → Grafana · M5 (pendukung OPS-1) · 🟡 (bagian Grafana SKIP)
 
