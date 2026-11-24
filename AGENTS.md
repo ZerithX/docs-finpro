@@ -1,6 +1,6 @@
 # CampusDesk: Panduan untuk Agen AI
 
-Proyek final Modern Cloud Computing (SI Semester V, 2026/2027). Tim: Radya (Application & Data), B (Platform & Delivery), C (Security & Operations); peran ditukar 10 Nov. Defense sekitar 2 Desember 2026. Scope dan milestone: `docs/PRD_CampusDesk.md`; pembagian tugas: `docs/TASKS_M2-M5.md` dan `docs/HANDOFF_*.md` (kecuali `*_OLD.md`); status: `docs/PROGRESS.md`. Temuan paket dosen (T1–T10): `../Final_Project/CampusDesk_Rencana_Kerja.md` §4.
+Proyek final Modern Cloud Computing (SI Semester V, 2026/2027). Tim: Radya (Application & Data), B (Platform & Delivery), C (Security & Operations); peran ditukar 10 Nov. Defense sekitar 2 Desember 2026. Desain (peran, alur, kontrak API, quality scenario): `docs/PRD_CampusDesk.md`. **Scope, tugas, dan jadwal terbaru: `docs/prd/`** (mulai dari `00-INDEX.md`; satu PRD per area, ID tugas BE-/PD-/SEC-/REL-/OPS-/CAP-/FD-). Langkah teknis backend: `docs/HANDOFF_Radya_Backend.md`. Status: `docs/PROGRESS.md`. `docs/TASKS_*.md` hanya riwayat. Temuan paket dosen (T1–T10): `../Final_Project/CampusDesk_Rencana_Kerja.md` §4.
 
 ## Gaya
 - Balas dalam Bahasa Indonesia (istilah teknis boleh Inggris). Tim masih belajar: jelaskan *kenapa*, bukan hanya *apa*.
@@ -11,7 +11,7 @@ Proyek final Modern Cloud Computing (SI Semester V, 2026/2027). Tim: Radya (Appl
 - Node.js 24 + TypeScript, Hono, Drizzle ORM (migrasi di `drizzle/`), Vitest, PostgreSQL 17, Keycloak OIDC, REST API + Swagger UI (tanpa frontend). Pindah dari Java/Quarkus pada 10 Nov (ADR-014). Pakai npm, bukan Bun (runner CI hanya punya Node).
 - Modular monolith. Jangan usulkan microservices atau message broker.
 - `tenant_id` HARUS dari klaim token, tidak pernah dari input pengguna. Role: `user`, `operator`, `admin`; grup: `tenant-a`, `tenant-b`.
-- Di luar scope: notifikasi, SSO kampus, kalender jam kerja, mobile, broker. Fitur dibekukan akhir minggu 3.
+- Di luar scope: notifikasi, SSO kampus, kalender jam kerja, mobile, broker. Fitur dibekukan Kam 26 Nov 2026 (lihat `docs/prd/01-backend.md`).
 
 ## Lab (paket dosen di `../Final_Project`)
 - Windows + PowerShell 7 (`pwsh`), jalankan `scripts/*.ps1` dari root `../Final_Project`.
@@ -23,7 +23,7 @@ Proyek final Modern Cloud Computing (SI Semester V, 2026/2027). Tim: Radya (Appl
 ## Delivery
 - Repo `capstone-app` dan `capstone-gitops` terpisah; GitOps tanpa source aplikasi dan tanpa secret asli.
 - CI: verify -> build image (tag short SHA) -> Trivy -> push -> update tag di repo GitOps. CI tidak `kubectl apply`; Argo CD yang deploy.
-- Promosi: dev (otomatis) -> staging (PR) -> prod (PR + sync manual).
+- Lab hanya punya environment dev (sinkron otomatis). Staging/prod **dipotong** per 23 Nov dan hanya dijelaskan sebagai desain (ADR-011, `docs/prd/02-platform-delivery.md`). Jangan membuat overlay staging/prod kecuali diminta.
 - `main` dilindungi, PR + 1 review. Branch `feat/`, `fix/`, `docs/`, `ops/`; commit `feat: ...`.
 
 ## Quality gate

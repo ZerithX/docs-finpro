@@ -14,7 +14,7 @@ Status: **Draf (menunggu owner)** = konteks sudah diisi, keputusan belum ditulis
 
 | No | Keputusan | Owner | Status |
 |---|---|---|---|
-| [001](ADR-001-modular-monolith.md) | Modular monolith | Radya | Diusulkan |
+| [001](ADR-001-modular-monolith.md) | Modular monolith | Radya | Diterima (24 Nov, konfirmasi owner; tanpa review B/C) |
 | [002](ADR-002-shared-schema-tenant-id.md) | Shared schema + `tenant_id` | C | Draf (menunggu owner) |
 | [003](ADR-003-oidc-tenant-dari-klaim-grup.md) | OIDC + tenant dari klaim grup (404 vs 403) | C | Draf (menunggu owner) |
 | [004](ADR-004-operator-lintas-tenant-audit.md) | Operator lintas tenant + audit | C | Draf (menunggu owner) |
@@ -25,7 +25,7 @@ Status: **Draf (menunggu owner)** = konteks sudah diisi, keputusan belum ditulis
 | [009](ADR-009-sla-24x7.md) | SLA 24x7 | Radya | Diusulkan (menunggu jawaban dosen) |
 | [010](ADR-010-db-url-service-postgres.md) | `DB_URL` via service `postgres` di `capstone-net` | B | Draf (menunggu owner); perubahan sudah berjalan |
 | [011](ADR-011-tiga-environment-satu-cluster.md) | Tiga environment dalam satu cluster | B | Draf (menunggu owner) |
-| [012](ADR-012-issuer-oidc.md) | Issuer OIDC (discovery `keycloak:8080`, issuer token `localhost:8081`) | Radya | Diusulkan (belum diverifikasi di cluster) |
+| [012](ADR-012-issuer-oidc.md) | Issuer OIDC (discovery `keycloak:8080`, issuer token `localhost:8081`) | Radya | Diterima (24 Nov, konfirmasi owner; tanpa review B/C) |
 | [013](ADR-013-perubahan-paket-dosen.md) | Perubahan paket dosen (T2, T8–T10) | B | Draf (menunggu owner) |
 | [014](ADR-014-substitusi-typescript.md) | Substitusi stack aplikasi ke TypeScript (Hono + Drizzle) | Radya | Diusulkan (perlu konfirmasi dosen) |
 | [015](ADR-015-prometheus-scrape-nodeport.md) | Prometheus men-scrape lewat Service NodePort di `capstone-net` | C | Draf (menunggu owner) |

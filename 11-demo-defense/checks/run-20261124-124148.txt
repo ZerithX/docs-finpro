@@ -1,0 +1,169 @@
+CampusDesk - pengecekan milestone
+Waktu          : 2026-11-24 12:41:48 SEAST
+Repo portofolio: c6a6285 (2026-11-23 23:38)
+capstone-app   : 496d0a0 (2026-11-23 23:16)
+capstone-gitops: ebf661a (2026-11-23 15:07)
+kubectl context: k3d-capstone
+Milestone      : 01 02 03 04 05 06 07 08 09 10 11   --write=0   --chaos=0
+
+== 01 Business (M0) ==
+  [PASS] ada: 01-business/proposal.md
+  [PASS] ada: 01-business/approval.md
+  [FAIL] approval.md masih PENDING
+         -> FD-1 (C): catat jawaban dosen
+
+== 02 Architecture (M1) ==
+  [PASS] ada: 02-architecture/architecture.md
+  [PASS] ada: 02-architecture/boundaries.md
+  [PASS] ada: 02-architecture/quality-scenarios.md
+  [PASS] diagram PNG: 5 file
+  [PASS] quality scenario QS1-QS7 lengkap
+  [PASS] trust boundary B1-B7 lengkap
+
+== 03 Application & Data (M2) ==
+  [PASS] BE-2 auth di cluster: 03-application-data/BE-2_auth-cluster.md
+  [PASS] BE-3 migrasi tiket: 03-application-data/BE-3_BE-4_tiket-cluster.md
+  [PASS] BE-4 tiket + filter tenant: 03-application-data/BE-3_BE-4_tiket-cluster.md
+  [PASS] readiness UP dan database UP
+  [PASS] login Keycloak berhasil (usera, userb, operator, appadmin)
+  [PASS] usera hanya melihat unit tenant-a
+  [PASS] appadmin melihat kedua unit
+  [PASS] kebijakan SLA: 4 prioritas
+  [PASS] data di PostgreSQL: 2 unit, 4 tiket, 7 baris audit
+  [SKIP] transaksi inti OPEN -> CLOSED
+         -> jalankan dengan --write (membuat 1 tiket uji berlabel [milestone-check])
+
+== 04 Platform Kubernetes (M3) ==
+  [PASS] context kubectl: k3d-capstone
+  [PASS] node Ready: 2/2
+  [PASS] deployment capstone-app Ready 1/1
+  [PASS] tag image = commit SHA (496d0a0f10f0), bukan latest
+  [PASS] readinessProbe /q/health/ready
+  [PASS] livenessProbe /q/health/live
+  [PASS] requests dan limits diset: {"limits":{"cpu":"500m","memory":"512Mi"},"requests":{"cpu":"100m","memory":"192Mi"}}
+  [PASS] ingress host: capstone.localhost
+  [PASS] ConfigMap OIDC_ISSUER lewat keycloak:8080 (ADR-012)
+  [PASS] Secret capstone-app-secret ada (nilainya tidak dicetak)
+  [PASS] riwayat rollout: 7 ReplicaSet (versi lama tersimpan untuk rollback)
+  [FAIL] PD-2 bukti M3 (rollout, scale 1->2, troubleshooting): belum ada file 04-platform-kubernetes/PD-2_*
+         -> B
+
+== 05 CI/CD & GitOps (M4) ==
+  [FAIL] PD-3 tabel traceability + QS6: belum ada file 05-ci-cd-gitops/PD-3_*
+         -> B
+  [FAIL] PD-4 latihan rollback: belum ada file 05-ci-cd-gitops/PD-4_*
+         -> B
+  [PASS] CI hanya publish setelah merge ke main
+  [PASS] CI menjalankan Trivy
+  [PASS] CI tidak menyentuh cluster (tanpa kubectl apply)
+  [PASS] run CI terakhir: success (commit 496d0a0f10f0)
+  [PASS] Argo CD capstone-app: Synced, Healthy di 6d59b60
+  [PASS] Argo CD selfHeal aktif
+  [PASS] revisi Argo CD = HEAD repo GitOps (6d59b60)
+  [PASS] image di cluster (496d0a0f10f0) = newTag di repo GitOps
+  [PASS] tag 496d0a0f10f0 menunjuk commit: 496d0a0 Merge pull request #9 from ZerithX/test/authz-matrix
+
+== 06 Security (M6) ==
+  [PASS] tanpa token -> 401
+  [PASS] token palsu -> 401
+  [PASS] token usera berisi groups /tenant-a (mapper BE-1)
+  [PASS] token usera berisi role user (realm_access)
+  [PASS] token dibuat untuk client capstone-app (azp)
+  [PASS] body tidak valid (prioritas SUPER) -> 400
+         tiket tenant-a yang dipakai: id=3
+  [PASS] userb membuka tiket tenant-a -> 404
+  [PASS] daftar tiket userb tidak memuat tiket tenant-a
+  [PASS] usera (bukan operator) mencoba assign -> 403
+  [PASS] operator membuka tiket tenant-a (lintas tenant) -> 200
+  [SKIP] uji 409 transisi tidak sah
+         -> jalankan dengan --write
+  [PASS] tidak ada file .env yang ter-commit di capstone-app
+  [PASS] repo GitOps hanya berisi Secret contoh (*.example.yaml)
+  [PASS] BE-1 mapper grup Keycloak: 06-security/BE-1_keycloak-groups-mapper.md
+  [PASS] BE-7 matriks tes negatif: 06-security/BE-5_BE-7_alur-authz.md
+  [FAIL] export realm Keycloak belum ada
+         -> SEC-1 (C)
+  [FAIL] SEC-1 isi token per user: belum ada file 06-security/SEC-1_*
+         -> C
+  [FAIL] SEC-2 matriks authz + verifikasi: belum ada file 06-security/SEC-2_*
+         -> C
+  [FAIL] SEC-3 analisis Trivy + perbaikan: belum ada file 06-security/SEC-3_*
+         -> C
+  [FAIL] SEC-4 review secret di riwayat Git: belum ada file 06-security/SEC-4_*
+         -> C
+  [FAIL] SEC-5 ancaman/kontrol B1-B7: belum ada file 06-security/SEC-5_*
+         -> C
+
+== 07 Observability & SLO (M5) ==
+  [PASS] aplikasi mengekspor metrik HTTP (/q/metrics)
+  [FAIL] metrik bisnis tiket belum ada
+         -> BE-8 (Radya)
+  [SKIP] target Prometheus
+         -> Prometheus tidak terjangkau di http://127.0.0.1:9090 (jalankan up-observability)
+  [SKIP] dasbor Grafana
+         -> Grafana tidak terjangkau di http://127.0.0.1:3000
+  [PASS] ada: 07-observability-slo/grafana/campusdesk-service-health.json
+  [FAIL] OPS-1 dokumen SLI/SLO: belum ada file 07-observability-slo/OPS-1_*
+         -> C
+  [FAIL] OPS-2 runbook: belum ada file 07-observability-slo/OPS-2_*
+         -> C
+
+== 08 Reliability & Recovery (M7) ==
+  [SKIP] uji hapus pod dan self-heal
+         -> jalankan dengan --chaos (layanan jeda beberapa detik karena replica 1)
+  [FAIL] belum ada database hasil restore
+         -> REL-4 (B)
+  [FAIL] REL-1 hapus pod (QS3): belum ada file 08-reliability-recovery/REL-1_*
+         -> B
+  [FAIL] REL-2 drift -> self-heal: belum ada file 08-reliability-recovery/REL-2_*
+         -> B
+  [FAIL] REL-3 database mati (QS7): belum ada file 08-reliability-recovery/REL-3_*
+         -> B
+  [FAIL] REL-4 backup -> restore -> validasi (QS5): belum ada file 08-reliability-recovery/REL-4_*
+         -> B
+
+== 09 Capacity & FinOps (M8) ==
+  [PASS] pemakaian sekarang (kubectl top): capstone-app-7b4c864fb-hx7rv: CPU 7m, memori 27Mi
+         requests: {"cpu":"100m","memory":"192Mi"}
+         limits:   {"cpu":"500m","memory":"512Mi"}
+  [FAIL] CAP-1 uji beban (QS4): belum ada file 09-capacity-finops/CAP-1_*
+         -> C
+  [FAIL] CAP-2 rightsizing: belum ada file 09-capacity-finops/CAP-2_*
+         -> B
+  [FAIL] CAP-3 model biaya: belum ada file 09-capacity-finops/CAP-3_*
+         -> C
+  [FAIL] CAP-4 roadmap + risiko sisa: belum ada file 09-capacity-finops/CAP-4_*
+         -> C
+
+== 10 Decisions (ADR) ==
+  [PASS] jumlah ADR: 15
+         berstatus Diterima: 0 dari 15
+  [FAIL] ADR masih draf: ADR-002 ADR-003 ADR-004 ADR-006 ADR-007 ADR-008 ADR-010 ADR-011 ADR-013 ADR-015
+         -> PD-5 (B), SEC-6 (C)
+
+== 11 Demo & Defense (FINAL) ==
+  [FAIL] belum ada / kosong: 11-demo-defense/demo-script.md
+         -> FD-2 (B)
+  [FAIL] koleksi API belum ada di 11-demo-defense/api/
+         -> FD-2 (B)
+  [FAIL] belum ada / kosong: 11-demo-defense/checklist.md
+         -> FD-8 (C)
+  [FAIL] refleksi individu: 0 dari 3
+         -> FD-5 (semua)
+
+== Ringkasan per milestone ==
+MS    PASS  FAIL  SKIP
+01       2     1     0
+02       6     0     0
+03       9     0     1
+04      11     1     0
+05       9     2     0
+06      14     6     1
+07       2     3     2
+08       0     5     1
+09       1     4     0
+10       1     1     0
+11       0     4     0
+
+Ringkasan: 55 PASS, 27 FAIL, 5 SKIP
+Hasil tersimpan: 11-demo-defense/checks/run-20261124-124148.txt

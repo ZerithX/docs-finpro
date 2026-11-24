@@ -1,0 +1,43 @@
+CampusDesk - observasi M5 (curl -> Prometheus -> Grafana)
+Waktu mulai : 2026-11-24 13:02:15 SEAST
+Image       : registry:5000/student/capstone-app:496d0a0f10f0
+Method      : 30 putaran GET (200, 401, 404) lewat ingress; counter aplikasi dibandingkan dengan Prometheus
+
+== A. Komponen terjangkau ==
+  [PASS] aplikasi: /q/metrics 200
+  [PASS] Prometheus ready -> 200
+  [PASS] Prometheus: target capstone-app UP
+  [PASS] Grafana: hidup, database ok
+
+== B. Kirim trafik dengan curl ==
+  [PASS] token usera didapat
+         30 putaran selesai dalam 31 detik: 200=90 401=30 404=6 lain=0
+  [PASS] semua respons 200/401/404
+
+== C. Terdeteksi di Prometheus ==
+  [PASS] aplikasi menghitung status 200: +90 = jumlah curl
+  [PASS] aplikasi menghitung status 401: +30 = jumlah curl
+  [PASS] aplikasi menghitung status 404: +6 = jumlah curl
+  [PASS] Prometheus memuat semua request; terdeteksi 8 detik setelah request terakhir (batas 60)
+  [PASS] proses tidak restart selama uji
+
+== D. Terdeteksi lewat Grafana ==
+  [SKIP] dasbor dan datasource Grafana
+         -> login ditolak (401): set GRAFANA_AUTH=admin:<password> atau reset password
+
+== E. Observasi (query panel dasbor, jendela 5 menit) ==
+         Request API                  0.48 req/s
+         Non-5xx                      100.00 %
+         Latensi p95                  6.65 ms
+         Memori (RSS)                 93.35 MiB (limit 512)
+         Event loop lag p99           10.67 ms
+         Restart proses 1 jam         0.00 kali
+  [PASS] SLO non-5xx % >= 99 (usulan, belum final)
+  [PASS] SLO p95 ms <= 500 (usulan, belum final)
+
+Waktu selesai: 2026-11-24 13:03:07 SEAST
+Limitation   : trafik buatan, volume kecil, hanya GET, satu pod di dev; jendela 5 menit bisa memuat trafik sebelum uji.
+               Tidak menguji 5xx/gangguan (REL-3) dan bukan uji beban (CAP-1).
+
+Ringkasan: 13 PASS, 0 FAIL, 1 SKIP
+Hasil tersimpan: 07-observability-slo/observations/observe-20261124-130215.txt
