@@ -76,7 +76,7 @@ Setelah profil diisi, payload access token `usera` (header dan signature tidak d
 
 ## Limitasi
 
-- Hanya payload token `usera` yang di-decode. Payload `userb`, `operator`, `appadmin` menyusul (SEC-1, C); token mereka hanya diuji fungsional di server lokal saat BE-2.
+- Dokumen ini hanya memuat payload token `usera`. Isi token keempat akun: `SEC-1_isi-token.md`.
 - Perubahan hanya ada di database Keycloak. **Hilang jika realm di-import ulang / lab di-reset**, karena `realm-capstone.json` milik dosen tidak diubah. C perlu mengekspor realm (SEC-1) agar perubahan tersimpan di repo.
 - Screenshot: `BE-1_usera-token-decoded.png` (decode lokal di PowerShell, token kedua dengan `iat` 2026-11-23 04:52:29 WIB; salinan dari `docs/01-backend/be-1keycloak.png`).
 - Akun yang dipakai adalah akun default paket lab dosen; password tidak dicantumkan (PRD 03 §4.1).
