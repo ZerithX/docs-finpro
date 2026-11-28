@@ -7,7 +7,7 @@
 | Versi | v1.0, 23 Nov 2026 |
 | Target | REL wajib **Kam 26 Nov**; OPS wajib **Jum 27 Nov** |
 | Folder evidence | `07-observability-slo/`, `08-reliability-recovery/` |
-| Acuan | `docs/PRD_CampusDesk.md` §7 M5, M7, §8 (QS3, QS5, QS7) · `docs/BRIEF_C_M5_Observability.md` · Infrastructure Guide §18 (backup/restore) |
+| Acuan | `docs/PRD_CampusDesk.md` §7 M5, M7, §8 (QS3, QS5, QS7) · `docs/archive/BRIEF_C_M5_Observability.md` (riwayat) · Infrastructure Guide §18 (backup/restore) |
 
 ---
 

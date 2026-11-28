@@ -4,7 +4,7 @@
 |---|---|
 | Course | Modern Cloud Computing, Final Capstone (Information Systems, Sem. V, 2026/2027) |
 | Track | IT Service: Multi-Tenant Service Desk (tenant = campus faculty/unit) |
-| Team | Radya (Application & Data), B (Platform & Delivery), C (Security & Operations). Roles swapped on 10 Nov; see `docs/TASKS_M2-M5.md` v2. |
+| Team | Radya (Application & Data), B (Platform & Delivery), C (Security & Operations). Roles swapped on 10 Nov; see `docs/archive/TASKS_M2-M5.md` v2. Current scope and tasks: `docs/prd/`. |
 | Version | v1.0, 3 Nov 2026 |
 | Target defense | ~2 Dec 2026 |
 | Source of truth | `Final_Capstone_Project_Guideline` (milestones M0 to FINAL, rubric, quality gates). If this PRD conflicts with the Guideline, the Guideline wins. |

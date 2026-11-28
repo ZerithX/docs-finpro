@@ -1,6 +1,6 @@
 # CampusDesk: Panduan untuk Agen AI
 
-Proyek final Modern Cloud Computing (SI Semester V, 2026/2027). Tim: Radya (Application & Data), B (Platform & Delivery), C (Security & Operations); peran ditukar 10 Nov. Defense sekitar 2 Desember 2026. Desain (peran, alur, kontrak API, quality scenario): `docs/PRD_CampusDesk.md`. **Scope, tugas, dan jadwal terbaru: `docs/prd/`** (mulai dari `00-INDEX.md`; satu PRD per area, ID tugas BE-/PD-/SEC-/REL-/OPS-/CAP-/FD-). Langkah teknis backend: `docs/HANDOFF_Radya_Backend.md`. Status: `docs/PROGRESS.md`. `docs/TASKS_*.md` hanya riwayat. Temuan paket dosen (T1–T10): `../Final_Project/CampusDesk_Rencana_Kerja.md` §4.
+Proyek final Modern Cloud Computing (SI Semester V, 2026/2027). Tim: Radya (Application & Data), B (Platform & Delivery), C (Security & Operations); peran ditukar 10 Nov. Defense sekitar 2 Desember 2026. Desain (peran, alur, kontrak API, quality scenario): `docs/PRD_CampusDesk.md`. **Scope, tugas, dan jadwal terbaru: `docs/prd/`** (mulai dari `00-INDEX.md`; satu PRD per area, ID tugas BE-/PD-/SEC-/REL-/OPS-/CAP-/FD-). Langkah teknis backend: `docs/HANDOFF_Radya_Backend.md`. Status: `docs/PROGRESS.md`. Dokumen lama (`TASKS_*`, handoff B, brief C) ada di `docs/archive/` dan hanya riwayat; peta dokumen: `docs/README.md`. Temuan paket dosen (T1–T10): `../Final_Project/CampusDesk_Rencana_Kerja.md` §4.
 
 ## Gaya
 - Balas dalam Bahasa Indonesia (istilah teknis boleh Inggris). Tim masih belajar: jelaskan *kenapa*, bukan hanya *apa*.

@@ -8,7 +8,7 @@
 | Target | Semua wajib selesai **Jum 27 Nov** |
 | Repo | `capstone-gitops` (GitHub `helpdesk-gitops`), `capstone-app` (`.gitea/workflows/ci.yml`), `campusdesk` (evidence) |
 | Folder evidence | `04-platform-kubernetes/`, `05-ci-cd-gitops/`, `10-decisions-adr/` |
-| Acuan | `docs/PRD_CampusDesk.md` §7 M3, M4 · `docs/HANDOFF_B_Platform.md` · `docs/lab-kit/README.md` |
+| Acuan | `docs/PRD_CampusDesk.md` §7 M3, M4 · `docs/archive/HANDOFF_B_Platform.md` (langkah teknis lama, riwayat) · `docs/lab-kit/README.md` |
 
 ---
 

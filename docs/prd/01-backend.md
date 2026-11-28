@@ -28,6 +28,8 @@ Semua kasus di atas juga **dites otomatis di CI**. Ini menjawab langkah demo fin
 
 ## 2. Status per 23 Nov
 
+> **Catatan 28 Nov:** tabel di bawah adalah titik awal PRD ini dan tidak diperbarui. Status terbaru per ID ada di `00-INDEX.md` (bagian *Status per ID*) dan `docs/PROGRESS.md`.
+
 | Sudah ada di `main` dan di cluster | Belum ada |
 |---|---|
 | `GET /api/units`, `GET /api/sla-policies`, `GET /api/sla-policies/{priority}` | Login / verifikasi token |
