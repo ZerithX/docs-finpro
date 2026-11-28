@@ -1,6 +1,6 @@
 # Handoff Claude Code: Tugas Radya (Application & Data) R1–R8
 
-> Dibuat 10 Nov 2026 (v2, setelah peran ditukar). Sumber: `docs/TASKS_M2-M5.md` §3 dan `docs/PRD_CampusDesk.md` §7 (M2). Aturan proyek: `AGENTS.md`.
+> Dibuat 10 Nov 2026 (v2, setelah peran ditukar). Sumber: `docs/archive/TASKS_M2-M5.md` §3 dan `docs/PRD_CampusDesk.md` §7 (M2). Aturan proyek: `AGENTS.md`.
 > **Untuk Claude Code:** kerjakan **satu tugas per sesi/branch**, plan mode dulu. Jangan menulis hasil yang tidak benar-benar dijalankan. Setelah tiap tugas, tambahkan entri di `docs/PROGRESS.md`. Item [CEK] harus dibuktikan dulu.
 > Repo: `capstone-app` (GitHub `helpdesk-campus`). **Sejak 10 Nov: Node.js 24 + TypeScript, Hono, Drizzle ORM, Vitest, prom-client** (ADR-014; sebelumnya Java/Quarkus). Skema DB hanya berubah lewat file migrasi **baru** di `drizzle/` (`npm run db:generate`); migrasi lama tidak diedit.
 

@@ -13,10 +13,13 @@ Di lab, CI berjalan di Gitea lokal (`http://127.0.0.1:3001/student/capstone-app`
 
 | Repo | Commit / tag | Tanggal | Keterangan |
 |---|---|---|---|
-| helpdesk-campus | `6aa3092` | 2026-11-01 | Walking skeleton (merge PR #1) |
-| helpdesk-gitops | `c8162ce` | 2026-11-01 | `deploy: capstone-app 6aa3092464c0` |
+| helpdesk-campus | `754ea29` | 2026-11-24 | Merge PR #10 (BE-6, BE-8, BE-9); fitur dibekukan 26 Nov |
+| helpdesk-gitops (Gitea, dibaca Argo CD) | `119082b` | 2026-11-24 | `deploy: capstone-app 754ea29d6a46` (CI run 13, lihat `docs/PROGRESS.md` 24 Nov) |
+| helpdesk-gitops (GitHub) | `d226e99` | 2026-11-24 | Revert overlay staging/prod (PR #4). **Perlu verifikasi:** tag dev di GitHub masih `74e4beb9c509`; GitHub dan Gitea belum disatukan |
 
-Perbarui tabel ini setiap rilis (`v0.1.0`, `v0.2.0`).
+Riwayat: walking skeleton `6aa3092` → GitOps `c8162ce` (1 Nov).
+
+Perbarui tabel ini setiap rilis. Belum ada tag rilis (PD-7); tag yang dinilai dipilih saat FD-6.
 
 ## Saat submission (Guideline §15)
 

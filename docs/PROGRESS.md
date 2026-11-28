@@ -1,32 +1,50 @@
 # CampusDesk — Log Progres per Task dan Milestone
 
 **Tujuan:** satu tempat untuk melihat apa yang sudah dikerjakan, oleh siapa, dengan bukti apa, dan apa yang masih terbuka.
-**Sumber milestone:** `docs/PRD_CampusDesk.md` §7. Kalau file ini dan PRD berbeda soal scope, PRD (dan Guideline) yang menang; status di sini yang paling baru.
+**Sumber scope dan jadwal:** `docs/prd/` (status per ID: `docs/prd/00-INDEX.md`). `docs/PRD_CampusDesk.md` hanya acuan desain. Kalau berbeda, Guideline > `docs/prd/` > PRD tim. Status di sini yang paling baru.
 **Aturan isi:** setiap entri mencatat tanggal (WIB), owner, apa yang berubah, bukti (commit/file/output), dan yang **belum diverifikasi**. Jangan menulis hasil yang tidak benar-benar dijalankan.
+**Catatan 28 Nov:** `TASKS_*`, `HANDOFF_B_Platform.md`, `HANDOFF_Radya_Platform_v1_OLD.md`, dan `BRIEF_C_M5_Observability.md` dipindah ke `docs/archive/`. Entri lama di bawah tetap menyebut lokasi aslinya.
 
-Legenda: ✅ selesai · 🟡 sebagian · ⬜ belum mulai · ⏳ menunggu pihak lain
+Legenda: ✅ selesai · 🟡 sebagian · ⬜ belum ada bukti di repo · ⏳ menunggu pihak lain
 
 ---
 
-## Status milestone
+## Status milestone (per 28 Nov)
+
+Target mengikuti `docs/prd/` (23 Nov). Sejak 24 Nov belum ada commit baru di ketiga repo.
 
 | Milestone | Target | Owner | Status | Catatan singkat |
 |---|---|---|---|---|
 | Lab & walking skeleton (minggu 1) | 3 Nov | Radya | ✅ | Skeleton terdeploy via CI + Argo CD (`6aa3092` → GitOps `c8162ce`) |
 | M0 Case Proposal | 5 Nov | C | 🟡 | `proposal.md` ada; `approval.md` masih PENDING (FD-1) |
-| M1 Architecture | 13 Nov (mundur dari 10 Nov) | Semua | 🟡 | ADR 001–015 ada, belum ada yang *Diterima*; `quality-scenarios.md` dan `boundaries.md` (draf) ada |
-| M2 Application MVP | 14 Nov (freeze 17 Nov) | Radya | 🟡 | BE-1–BE-5 dan BE-7 berjalan di cluster (`496d0a0`). Sisa: bukti data bertahan setelah pod dihapus, tes breach (BE-6), export realm (SEC-1), ADR-012 |
-| M3 Cloud-Native Platform | 14 Nov | B | 🟡 | Berjalan; PD-1 selesai; bukti PD-2 belum di folder final |
-| M4 Delivery Automation | 17 Nov | B (A1: Radya) | 🟡 | CI → GitOps → Argo CD dev terbukti berulang; PD-3 (traceability) dan PD-4 (rollback) belum; staging/prod dipotong |
-| M5 Operations & SLO | 21 Nov | C | 🟡 | Bukti awal Grafana di `milestone_p13/`; SLO, runbook, panel tiket belum |
-| M6 Security | 24 Nov | C | 🟡 | Tes authz dan bukti cluster ada (BE-5/BE-7); SEC-1–SEC-6 belum terlihat di repo |
-| M7 Reliability & Recovery | 24 Nov | C + Radya | ⬜ | Owner terbaru di `docs/prd/`: B (REL). Belum ada bukti di repo |
-| M8 Capacity & FinOps | 28 Nov | C, semua | ⬜ | Belum ada bukti di repo |
-| FINAL Demo & Defense | 1–2 Des | Semua | ⬜ | |
+| M1 Architecture | 13 Nov | Semua | 🟡 | ADR-001 dan 012 *Diterima*; B (006–008, 010, 011, 013) draf menunggu review; C (002–004, 015) masih menunggu owner; `boundaries.md` draf |
+| M2 Application MVP | freeze Kam 26 Nov | Radya | 🟡 | BE-1–BE-9 di `main` `754ea29` dan di cluster (24 Nov). Sisa: matriks C (SEC-2), seed di DB cluster, bukti data bertahan setelah pod dihapus |
+| M3 Cloud-Native Platform | Jum 27 Nov | B | 🟡 | PD-1 ✅; PD-2 ada 7 file (lab lokal B, belum lab resmi) |
+| M4 Delivery Automation | Jum 27 Nov | B | 🟡 | CI → GitOps → Argo CD dev terbukti berulang; PD-6 ✅; PD-3, PD-4, PD-7 belum; staging/prod dipotong (gitops PR #4). GitHub dan Gitea gitops belum disatukan |
+| M5 Operations & SLO | Jum 27 Nov | C | 🟡 | Metrik BE-8 dan skrip observasi ada; OPS-1, OPS-2, OPS-3 belum |
+| M6 Security | Jum 27 Nov | C | 🟡 | SEC-1 sebagian (PR #5 docs); tes authz BE-7 ada; SEC-2–SEC-7 belum |
+| M7 Reliability & Recovery | Kam 26 Nov | B (REL) | ⬜ | REL-1–REL-5 belum ada bukti. REL-4 (restore) adalah quality gate |
+| M8 Capacity & FinOps | Sab 28 Nov | C (+ B) | ⬜ | CAP-1–CAP-5 belum ada bukti |
+| FINAL Demo & Defense | 1–2 Des | Semua | ⬜ | Gladi 1 dijadwalkan Min 29 Nov |
 
 ---
 
 ## Log task (terbaru di atas)
+
+### 2026-11-28 — Perapihan dokumen kerja (FD-3 bagian `docs/`) · FINAL · 🟡 (branch lokal, belum PR)
+
+- **Owner:** Radya (dikerjakan Claude Code, perlu direview Radya). Branch `docs/rapikan-docs` dari `origin/main` `ea8310c`.
+- **Perubahan:**
+  - `git mv` ke `docs/archive/`: `TASKS_M2-M5.md`, `TASKS_M6-M8.md`, kedua PDF, `HANDOFF_B_Platform.md`, `HANDOFF_Radya_Platform_v1_OLD.md`, `BRIEF_C_M5_Observability.md`, plus `archive/README.md`. Isi tidak diubah.
+  - `docs/README.md` baru (peta dan urutan baca dokumen); rujukan di `AGENTS.md`, `PRD_CampusDesk.md`, `HANDOFF_Radya_Backend.md`, PRD 00/02/04 diarahkan ke lokasi baru.
+  - `docs/prd/00-INDEX.md`: tabel **Status per ID** (BE-1 s.d. FD-8). PRD 01 §2 diberi catatan bahwa tabel 23 Nov sudah usang.
+  - Status milestone dan tabel pekerjaan terbuka di file ini diperbarui; `source/README.md` ke versi `754ea29`; indeks ADR disamakan dengan status di file ADR (B: "menunggu review"; ADR-011 diberi catatan staging/prod dipotong).
+  - `docs/01-backend/be-1keycloak.png` → `06-security/BE-1_keycloak-token-asli.png` (evidence, bukan dokumen kerja); `milestone_p13/README.md` berisi tujuan pemindahan per FD-3.
+- **Metode:** status diambil dari isi repo dan log ini, bukan dari cluster. Lab mati (Gitea `127.0.0.1:3001` tidak terjangkau), jadi **tidak ada yang diverifikasi ulang di cluster**.
+- **Temuan yang belum ditindaklanjuti (di luar docs):**
+  - `helpdesk-gitops`: `gitea/main` (ref terakhir: 3 commit `deploy:` sampai `754ea29d6a46`) dan GitHub `main` (`d226e99`, tag dev `74e4beb9c509`) bercabang. Push paksa GitHub → Gitea akan menurunkan versi app di cluster. Perlu merge `gitea/main` ke `main` saat lab menyala.
+  - Repo root dan `capstone-gitops` lokal tertinggal dari GitHub; branch lokal yang sudah di-merge dan 2 worktree lama belum dibersihkan.
+  - Skrip `demo-04.sh`, `demo-m3-m4.sh`, `show-commands.sh`, perubahan README-nya, 5 output `11-demo-defense/checks/`, `image.png`, dan 2 screenshot `milestone_p13/` belum di-commit.
 
 ### 2026-11-24 — BE-6 laporan SLA, BE-8 metrik bisnis, BE-9 seed demo, BE-10 revisi ADR · M2/M5/M1 · 🟡 (BE-6 dan BE-8 terbukti di cluster; BE-9 lokal; BE-10 sebagian)
 
@@ -247,12 +265,15 @@ Legenda: ✅ selesai · 🟡 sebagian · ⬜ belum mulai · ⏳ menunggu pihak l
 
 ## Pekerjaan terbuka lintas milestone
 
-| # | Item | Milestone | Owner |
-|---|---|---|---|
-| 1 | Merge PR A1 dan buktikan perilaku CI di Gitea | M4 | Radya, review B/C |
-| 2 | Review dan kirim proposal M0 | M0 | C |
-| 3 | Repo portofolio `cloud-capstone-<tim>` dari root `campusdesk/` dengan struktur Guideline §9.1 (tugas B1) | M0/M1 | B |
-| 4 | Lengkapi 3 file bukti walking skeleton (`03-application-data/`, `05-ci-cd-gitops/`) dengan evidence standard | M3/M4 | Radya |
-| 5 | ADR untuk T8–T10 dan DB_URL (ADR 010) | M1 | Radya + C |
-| 6 | Bersihkan H2 (README), H3 (`.github/modernize/`), H5 (dependensi ganda) | M2/M4 | B / Radya |
-| 7 | Buktikan A2 (readiness turun saat DB mati) | M3/M7 | Radya |
+Diperbarui 28 Nov. Daftar lengkap per ID: `docs/prd/00-INDEX.md` (*Status per ID*). Tabel ini hanya item yang tidak punya ID atau lintas ID.
+
+| # | Item | Milestone | Owner | Status |
+|---|---|---|---|---|
+| 1 | Satukan `helpdesk-gitops` GitHub dan Gitea (merge `gitea/main` ke `main`, jangan push paksa) | M4 | B / Radya | ⬜ saat lab menyala |
+| 2 | Lengkapi 3 file bukti walking skeleton (`api_test.txt`, `Ci_ijo.png`, `commit_in_1st_week.png`) dengan evidence standard | M3/M4 (FD-3) | Radya, B | ⬜ |
+| 3 | Pindahkan isi `milestone_p13/` ke folder bernomor | FINAL (FD-3) | pemilik folder | ⬜ |
+| 4 | Buktikan A2: readiness turun saat DB mati | M3/M7 (REL-3) | B | ⬜ |
+| 5 | Commit skrip demo dan output `11-demo-defense/checks/` | FINAL (FD-2) | Radya | ⬜ |
+| 6 | Bersihkan branch lokal yang sudah di-merge dan worktree lama | — | Radya | ⬜ |
+
+Selesai (dari tabel lama 3 Nov): A1 fix CI di-merge; repo portofolio `docs-finpro` dibuat; ADR 010 dan 013 ditulis B (menunggu review). Proposal M0 dipindah ke FD-1; H2/H3/H5 (temuan era Java) belum dicek ulang setelah migrasi TypeScript; `.github/modernize/` masih ada di root tetapi di-ignore Git.
