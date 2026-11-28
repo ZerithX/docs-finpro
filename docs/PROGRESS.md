@@ -20,7 +20,7 @@ Target mengikuti `docs/prd/` (23 Nov). Sejak 24 Nov belum ada commit baru di ket
 | M1 Architecture | 13 Nov | Semua | 🟡 | ADR-001 dan 012 *Diterima*; B (006–008, 010, 011, 013) draf menunggu review; C (002–004, 015) masih menunggu owner; `boundaries.md` draf |
 | M2 Application MVP | freeze Kam 26 Nov | Radya | 🟡 | BE-1–BE-9 di `main` `754ea29` dan di cluster (24 Nov). Sisa: matriks C (SEC-2), seed di DB cluster, bukti data bertahan setelah pod dihapus |
 | M3 Cloud-Native Platform | Jum 27 Nov | B | 🟡 | PD-1 ✅; PD-2 ada 7 file (lab lokal B, belum lab resmi) |
-| M4 Delivery Automation | Jum 27 Nov | B | 🟡 | CI → GitOps → Argo CD dev terbukti berulang; PD-6 ✅; PD-3, PD-4, PD-7 belum; staging/prod dipotong (gitops PR #4). GitHub dan Gitea gitops belum disatukan |
+| M4 Delivery Automation | Jum 27 Nov | B | 🟡 | CI → GitOps → Argo CD dev terbukti berulang; PD-6 ✅; PD-3, PD-4, PD-7 belum; staging/prod dipotong (gitops PR #4). GitHub dan Gitea gitops disatukan 28 Nov (gitops PR #5) |
 | M5 Operations & SLO | Jum 27 Nov | C | 🟡 | Metrik BE-8 dan skrip observasi ada; OPS-1, OPS-2, OPS-3 belum |
 | M6 Security | Jum 27 Nov | C | 🟡 | SEC-1 sebagian (PR #5 docs); tes authz BE-7 ada; SEC-2–SEC-7 belum |
 | M7 Reliability & Recovery | Kam 26 Nov | B (REL) | ⬜ | REL-1–REL-5 belum ada bukti. REL-4 (restore) adalah quality gate |
@@ -30,6 +30,25 @@ Target mengikuti `docs/prd/` (23 Nov). Sejak 24 Nov belum ada commit baru di ket
 ---
 
 ## Log task (terbaru di atas)
+
+### 2026-11-28 — Sinkronisasi `helpdesk-gitops` GitHub dan Gitea · M4 (pendukung PD-3, PD-6) · ✅
+
+- **Owner:** Radya (perintah dijalankan Radya mengikuti panduan Claude Code; verifikasi akhir oleh Claude Code). Repo `capstone-gitops`.
+- **Masalah:** sejak 24 Nov `main` bercabang. Gitea (dibaca Argo CD) punya 3 commit CI yang tidak ada di GitHub: `6d59b60`, `fcb037b`, `119082b` (tag dev `754ea29d6a46`). GitHub punya PR #2 (overlay staging/prod), PR #3 (`.gitattributes`), dan PR #4 (revert PR #2), dengan tag dev masih `74e4beb9c509`. Push paksa GitHub → Gitea akan menurunkan app ke versi tanpa BE-5–BE-9.
+- **Metode:**
+  1. `git fetch` kedua remote, lalu `git log origin/main..gitea/main` dan sebaliknya.
+  2. Branch `fix/sync-gitea-github` dari `origin/main`, lalu `git merge --no-ff gitea/main` (`e7e9440`, 19:14:12 WIB). Merge bersih; hanya `newTag` di `overlays/dev/kustomization.yaml` yang berubah.
+  3. Validasi sebelum push: `kubectl kustomize overlays/dev` → image `754ea29d6a46`; `overlays/` hanya `dev/`; `.gitattributes` ada; `git log HEAD..gitea/main` kosong.
+  4. GitHub PR #5 di-merge sebagai merge commit `6ad1e4d` (19:19:16 WIB), lalu push biasa (tanpa `--force`) ke Gitea.
+- **Observasi (diperiksa 19:26 WIB):**
+  - `main` GitHub = `main` Gitea = `6ad1e4d` (`git ls-remote gitea`); `git rev-list gitea/main..origin/main` = 0.
+  - Argo CD `capstone-app`: Synced, Healthy, revisi `6ad1e4d` (reconciled 12:23:54 UTC = 19:23:54 WIB).
+  - Deployment `capstone` tetap `registry:5000/student/capstone-app:754ea29d6a46`. ReplicaSet terbaru masih `capstone-app-64b8648bc9` dari 24 Nov, jadi tidak ada rollout baru.
+  - `curl http://capstone.localhost:8088/q/health/ready` → 200; `/api/units` tanpa token → 401.
+  - Push pertama ke Gitea (sebelum PR di-merge) ditolak `non-fast-forward`. Penolakan ini mencegah commit CI hilang.
+- **Interpretasi:** riwayat kedua remote sekarang sama, tanpa commit yang hilang dan tanpa perubahan versi app. PD-6 (`.gitattributes`) kini juga sampai ke Gitea.
+- **Koreksi fakta:** namespace lab adalah `capstone` dan host `capstone.localhost`. `campusdesk-dev` dan `dev.capstone.localhost` hanya ada di overlay PR #2 yang sudah di-revert.
+- **Limitasi:** ini bukan bukti PD-3 secara utuh (tabel traceability commit → image → GitOps → Argo CD belum ditulis). Belum ada aturan tertulis yang mencegah cabang lagi; usulan: setiap PR GitOps di GitHub dimulai dari `gitea/main` terbaru, dicatat di ADR-007 (B).
 
 ### 2026-11-28 — Perapihan dokumen kerja (FD-3 bagian `docs/`) · FINAL · 🟡 (branch lokal, belum PR)
 
@@ -269,7 +288,7 @@ Diperbarui 28 Nov. Daftar lengkap per ID: `docs/prd/00-INDEX.md` (*Status per ID
 
 | # | Item | Milestone | Owner | Status |
 |---|---|---|---|---|
-| 1 | Satukan `helpdesk-gitops` GitHub dan Gitea (merge `gitea/main` ke `main`, jangan push paksa) | M4 | B / Radya | ⬜ saat lab menyala |
+| 1 | Satukan `helpdesk-gitops` GitHub dan Gitea (merge `gitea/main` ke `main`, jangan push paksa) | M4 | ✅ 28 Nov, gitops PR #5 `6ad1e4d` |
 | 2 | Lengkapi 3 file bukti walking skeleton (`api_test.txt`, `Ci_ijo.png`, `commit_in_1st_week.png`) dengan evidence standard | M3/M4 (FD-3) | Radya, B | ⬜ |
 | 3 | Pindahkan isi `milestone_p13/` ke folder bernomor | FINAL (FD-3) | pemilik folder | ⬜ |
 | 4 | Buktikan A2: readiness turun saat DB mati | M3/M7 (REL-3) | B | ⬜ |

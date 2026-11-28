@@ -35,10 +35,10 @@ Legenda: ✅ selesai dengan bukti · 🟡 sebagian / menunggu review · ⬜ belu
 | BE-10 | ADR backend | Radya | 🟡 | ADR-001, 012 Diterima; 005 Diusulkan; 009, 014 menunggu dosen |
 | PD-1 | ConfigMap OIDC | Radya (ganti B) | ✅ | gitops Gitea PR #2 `da85b12` |
 | PD-2 | Bukti M3 | B | 🟡 | `04-platform-kubernetes/PD-2_*.md` (7 file, 24 Nov); file menyebut lab lokal B, belum lab resmi |
-| PD-3 | Traceability + QS6 | B | ⬜ | `05-ci-cd-gitops/` hanya README + 2 screenshot 1 Nov |
+| PD-3 | Traceability + QS6 | B | ⬜ | `05-ci-cd-gitops/` hanya README + 2 screenshot 1 Nov. Data pendukung: sinkronisasi gitops 28 Nov di `PROGRESS.md` |
 | PD-4 | Latihan rollback | B + Radya | ⬜ | |
 | PD-5 | ADR platform | B | 🟡 | ADR 006, 007, 008, 010, 011, 013 ditulis (PR #4 docs), status Draf menunggu review |
-| PD-6 | `.gitattributes` | B | ✅ | app `70ef050`, gitops PR #3 (GitHub). menurut ref `gitea/main` terakhir yang ter-fetch, Gitea gitops belum menerima commit ini (perlu verifikasi saat lab menyala) |
+| PD-6 | `.gitattributes` | B | ✅ | app `70ef050`, gitops PR #3; sampai ke Gitea lewat gitops PR #5 `6ad1e4d` (28 Nov) |
 | PD-7 | Tag rilis | B | ⬜ | belum ada tag di kedua repo |
 | SEC-1 | Export realm + bukti token | C | 🟡 | docs PR #5, `06-security/SEC-1_isi-token.md`; export realm belum |
 | SEC-2 | Matriks authz | C + Radya | ⬜ | tes ada (BE-7), dokumen matriks C belum |
